@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>Lizerium.Localization.Core</PackageId>
+    <Version>1.0.0</Version>
+    <Title>Lizerium Localization Core</Title>
+    <Authors>Dvurechensky</Authors>
+    <Copyright>Copyright (c) Nikolay Dvurechensky</Copyright>
+    <PackageProjectUrl>https://github.com/Lizerium/Lizerium.Localization.Toolkit</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/Lizerium/Lizerium.Localization.Toolkit/blob/main/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/Lizerium/Lizerium.Localization.Toolkit</RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>Runtime RESX reader, writer and localization service for Lizerium.Localization.Toolkit.</Description>
+    <PackageTags>Localization;RESX;Runtime;WPF;Lizerium;Dvurechensky</PackageTags>
+    <PackageIcon>LOGO_400x400.png</PackageIcon>
+    <PackageReadmeFile>core.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\docs\core.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\media\LOGO_400x400.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

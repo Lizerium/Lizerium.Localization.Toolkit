@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Lizerium.Localization.Toolkit</id>
+    <version>$version$</version>
+    <title>Lizerium Localization Toolkit</title>
+    <authors>Dvurechensky</authors>
+    <projectUrl>https://github.com/Lizerium/Lizerium.Localization.Toolkit</projectUrl>
+    <licenseUrl>https://github.com/Lizerium/Lizerium.Localization.Toolkit/blob/main/LICENSE</licenseUrl>
+    <repository type="git" url="https://github.com/Lizerium/Lizerium.Localization.Toolkit" />
+    <copyright>Copyright (c) Nikolay Dvurechensky</copyright>
+    <icon>LOGO_400x400.png</icon>
+    <tags>Localization RESX SourceGenerator Analyzer CodeFix WPF Lizerium Dvurechensky</tags>
+    <description>All-in-one package for Lizerium localization: runtime Core, source generator, analyzer and code fixes.</description>
+    <readme>toolkit.md</readme>
+    <dependencies>
+      <group targetFramework="net8.0">
+        <dependency id="Lizerium.Localization.Core" version="$version$" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\..\docs\toolkit.md" target="" />
+    <file src="..\..\media\LOGO_400x400.png" target="" />
+    <file src="..\Lizerium.Localization.Generator\bin\$configuration$\netstandard2.0\Lizerium.Localization.Generator.dll" target="analyzers/dotnet/cs" />
+    <file src="..\Lizerium.Localization.Analyzer\bin\$configuration$\netstandard2.0\Lizerium.Localization.Analyzer.dll" target="analyzers/dotnet/cs" />
+  </files>
+</package>

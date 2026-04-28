@@ -1,0 +1,236 @@
+name: Lizerium Localization Toolkit Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_VERSION: 8.0.x
+  CONFIGURATION: Release
+  RID: win-x64
+  ARTIFACT_PREFIX: Lizerium.Localization.Toolkit
+
+jobs:
+  release:
+    name: Build release assets
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Resolve package version
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}"
+          if ($version.StartsWith("v")) {
+            $version = $version.Substring(1)
+          }
+
+          "PACKAGE_VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Restore
+        run: dotnet restore Lizerium.Localization.Toolkit.sln
+
+      - name: Build Core
+        run: dotnet build src/Lizerium.Localization.Core/Lizerium.Localization.Core.csproj -c ${{ env.CONFIGURATION }} --no-restore
+
+      - name: Build Generator
+        run: dotnet build src/Lizerium.Localization.Generator/Lizerium.Localization.Generator.csproj -c ${{ env.CONFIGURATION }} --no-restore
+
+      - name: Build Analyzer
+        run: dotnet build src/Lizerium.Localization.Analyzer/Lizerium.Localization.Analyzer.csproj -c ${{ env.CONFIGURATION }} --no-restore
+
+      - name: Build GUI
+        run: dotnet build src/Lizerium.Localization.GUI/Lizerium.Localization.GUI.csproj -c ${{ env.CONFIGURATION }} --no-restore
+
+      - name: Build Sample
+        run: dotnet build samples/WpfSampleApp/WpfSampleApp.csproj -c ${{ env.CONFIGURATION }} --no-restore
+
+      - name: Restore publish projects
+        run: |
+          dotnet restore src/Lizerium.Localization.GUI/Lizerium.Localization.GUI.csproj -r ${{ env.RID }}
+          dotnet restore samples/WpfSampleApp/WpfSampleApp.csproj -r ${{ env.RID }}
+
+      - name: Pack NuGet packages
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/nuget | Out-Null
+
+          dotnet pack src/Lizerium.Localization.Core/Lizerium.Localization.Core.csproj `
+            -c $env:CONFIGURATION `
+            -p:Version=$env:PACKAGE_VERSION `
+            -p:PackageVersion=$env:PACKAGE_VERSION `
+            -o artifacts/nuget `
+            --no-restore
+
+          dotnet pack src/Lizerium.Localization.Generator/Lizerium.Localization.Generator.csproj `
+            -c $env:CONFIGURATION `
+            -p:Version=$env:PACKAGE_VERSION `
+            -p:PackageVersion=$env:PACKAGE_VERSION `
+            -o artifacts/nuget `
+            --no-restore
+
+          dotnet pack src/Lizerium.Localization.Analyzer/Lizerium.Localization.Analyzer.csproj `
+            -c $env:CONFIGURATION `
+            -p:Version=$env:PACKAGE_VERSION `
+            -p:PackageVersion=$env:PACKAGE_VERSION `
+            -o artifacts/nuget `
+            --no-restore
+
+          dotnet pack src/Lizerium.Localization.Toolkit/Lizerium.Localization.Toolkit.csproj `
+            -c $env:CONFIGURATION `
+            -p:Version=$env:PACKAGE_VERSION `
+            -p:PackageVersion=$env:PACKAGE_VERSION `
+            -o artifacts/nuget `
+            --no-restore
+
+          dotnet pack src/Lizerium.Localization.GUI/Lizerium.Localization.GUI.csproj `
+            -c $env:CONFIGURATION `
+            -p:Version=$env:PACKAGE_VERSION `
+            -p:PackageVersion=$env:PACKAGE_VERSION `
+            -o artifacts/nuget `
+            --no-restore
+
+      - name: Publish GUI
+        run: >
+          dotnet publish src/Lizerium.Localization.GUI/Lizerium.Localization.GUI.csproj
+          -c ${{ env.CONFIGURATION }}
+          -r ${{ env.RID }}
+          --self-contained true
+          --no-restore
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=None
+          -p:DebugSymbols=false
+          -o artifacts/publish/gui/${{ env.RID }}
+
+      - name: Publish Sample
+        run: >
+          dotnet publish samples/WpfSampleApp/WpfSampleApp.csproj
+          -c ${{ env.CONFIGURATION }}
+          -r ${{ env.RID }}
+          --self-contained true
+          --no-restore
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=None
+          -p:DebugSymbols=false
+          -o artifacts/publish/sample/${{ env.RID }}
+
+      - name: Pack release assets
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $prefix = "${{ env.ARTIFACT_PREFIX }}"
+          New-Item -ItemType Directory -Force artifacts/release | Out-Null
+
+          Compress-Archive `
+            -Path artifacts/publish/gui/${{ env.RID }}/* `
+            -DestinationPath "artifacts/release/$prefix-GUI-$tag-${{ env.RID }}.zip" `
+            -Force
+
+          Compress-Archive `
+            -Path artifacts/publish/sample/${{ env.RID }}/* `
+            -DestinationPath "artifacts/release/$prefix-Sample-$tag-${{ env.RID }}.zip" `
+            -Force
+
+          Compress-Archive `
+            -Path artifacts/nuget/*.nupkg `
+            -DestinationPath "artifacts/release/$prefix-NuGet-$tag.zip" `
+            -Force
+
+          Compress-Archive `
+            -Path samples/WpfSampleApp/* `
+            -DestinationPath "artifacts/release/$prefix-SampleSource-$tag.zip" `
+            -Force
+
+          Get-ChildItem artifacts/release -File |
+            Get-FileHash -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash)  $(Split-Path $_.Path -Leaf)" } |
+            Set-Content "artifacts/release/SHA256SUMS.txt" -Encoding UTF8
+
+          $releaseNotes = @'
+          ## Lizerium.Localization.Toolkit __TAG__
+
+          A localization workflow for .NET/WPF projects based on `.resx` files.
+
+          Рабочий набор локализации для .NET/WPF проектов на основе `.resx` файлов.
+
+          ---
+
+          ### Included in this release
+
+          - NuGet packages for Toolkit, Core, Generator, Analyzer, and GUI
+          - Windows x64 standalone GUI editor
+          - Windows x64 published WPF sample application
+          - Sample project source archive
+          - SHA-256 checksums
+
+          ### Что входит в релиз
+
+          - NuGet-пакеты для Toolkit, Core, Generator, Analyzer и GUI
+          - Самостоятельная Windows x64 сборка GUI-редактора
+          - Опубликованная Windows x64 сборка WPF sample-приложения
+          - Архив исходников sample-проекта
+          - SHA-256 checksums
+
+          ---
+
+          ### Install package
+
+          ```powershell
+          dotnet nuget add source .\packages -n LizeriumLocal
+          dotnet add path\to\YourProject.csproj package Lizerium.Localization.Toolkit --version __VERSION__ --source .\packages
+          ```
+
+          ### Установка пакета
+
+          ```powershell
+          dotnet nuget add source .\packages -n LizeriumLocal
+          dotnet add path\to\YourProject.csproj package Lizerium.Localization.Toolkit --version __VERSION__ --source .\packages
+          ```
+
+          ---
+
+          ### GUI usage
+
+          Download the GUI archive, extract it, and run:
+
+          ```powershell
+          .\Lizerium.Localization.GUI.exe
+          ```
+
+          The editor can be registered in Visual Studio through `Tools -> External Tools...` with `$(ProjectDir)` as the argument.
+
+          ### Использование GUI
+
+          Скачай архив GUI, распакуй его и запусти:
+
+          ```powershell
+          .\Lizerium.Localization.GUI.exe
+          ```
+
+          Редактор можно добавить в Visual Studio через `Tools -> External Tools...`, передав `$(ProjectDir)` как аргумент.
+          '@
+
+          $releaseNotes = $releaseNotes.Replace("__TAG__", $tag).Replace("__VERSION__", $env:PACKAGE_VERSION)
+          $releaseNotes | Set-Content "artifacts/release/RELEASE_NOTES.md" -Encoding UTF8
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body_path: artifacts/release/RELEASE_NOTES.md
+          files: |
+            artifacts/release/*.zip
+            artifacts/release/SHA256SUMS.txt

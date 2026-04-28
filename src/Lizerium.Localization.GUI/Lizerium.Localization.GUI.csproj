@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <PackageId>Lizerium.Localization.GUI</PackageId>
+    <Version>1.0.0</Version>
+    <Title>Lizerium Localization GUI</Title>
+    <Authors>Dvurechensky</Authors>
+    <Copyright>Copyright (c) Nikolay Dvurechensky</Copyright>
+    <PackageProjectUrl>https://github.com/Lizerium/Lizerium.Localization.Toolkit</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/Lizerium/Lizerium.Localization.Toolkit/blob/main/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/Lizerium/Lizerium.Localization.Toolkit</RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>WPF editor for Lizerium.Localization.Toolkit RESX translation files.</Description>
+    <PackageTags>Localization;RESX;WPF;Editor;Translations;Lizerium;Dvurechensky</PackageTags>
+    <PackageIcon>LOGO_400x400.png</PackageIcon>
+    <PackageReadmeFile>gui.md</PackageReadmeFile>
+    <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\logo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lizerium.Localization.Core\Lizerium.Localization.Core.csproj" />
+    <None Include="..\..\docs\gui.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\media\LOGO_400x400.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
