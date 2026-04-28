@@ -1,10 +1,11 @@
 <h1 align="center">Lizerium.Localization.Toolkit</h1>
 
 <p align="center">
-  <img src="https://shields.dvurechensky.pro/nuget/v/Lizerium.Localization.Toolkit?style=for-the-badge&color=0891b2" alt="NuGet Version">
-  <img src="https://shields.dvurechensky.pro/nuget/dt/Lizerium.Localization.Toolkit?style=for-the-badge&color=a3e635" alt="NuGet Downloads">
-  <img src="https://shields.dvurechensky.pro/github/license/Dvurechensky/Lizerium.Localization.Toolkit?style=for-the-badge&color=f59e0b" alt="License">
-  <img src="https://shields.dvurechensky.pro/github/stars/Dvurechensky/Lizerium.Localization.Toolkit?style=for-the-badge&color=facc15" alt="GitHub Stars">
+    <img src="https://shields.dvurechensky.pro/badge/.NET-8.0-blue?logo=dotnet">
+    <img src="https://shields.dvurechensky.pro/badge/license-MIT-f59e0b">
+    <img src="https://shields.dvurechensky.pro/github/stars/Lizerium/Lizerium.Localization.Toolkit?style=for-the-badge&color=facc15">
+    <img src="https://shields.dvurechensky.pro/nuget/v/Lizerium.Localization.Toolkit">
+    <img src="https://shields.dvurechensky.pro/nuget/dt/Lizerium.Localization.Toolkit">
 </p>
 
 <div align="center" style="margin: 20px 0; padding: 10px; background: #1c1917; border-radius: 10px;">

@@ -10,6 +10,7 @@
 artifacts
 pre_commit.log
 pre_commit.ps1
+docs/PUSH_RELEASE.md
 
 # User-specific files
 *.suo
