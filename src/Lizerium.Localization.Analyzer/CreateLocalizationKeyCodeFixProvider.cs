@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 30 апреля 2026 09:20:05
- * Version: 1.0.3
+ * Last Updated: 01 мая 2026 06:52:48
+ * Version: 1.0.4
  */
 
 using System;
@@ -12,11 +12,14 @@ using System.Composition;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
@@ -30,7 +33,8 @@ namespace Lizerium.Localization.Analyzer;
 public sealed class CreateLocalizationKeyCodeFixProvider : CodeFixProvider
 {
     /// <inheritdoc />
-    public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(LocalizationInvocationAnalyzer.DiagnosticId);
+    public override ImmutableArray<string> FixableDiagnosticIds 
+        => ImmutableArray.Create(LocalizationInvocationAnalyzer.DiagnosticId);
 
     /// <inheritdoc />
     public override FixAllProvider? GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
@@ -38,6 +42,14 @@ public sealed class CreateLocalizationKeyCodeFixProvider : CodeFixProvider
     /// <inheritdoc />
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
+        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
+        var node = root?.FindNode(context.Span);
+
+        var literal = node?.FirstAncestorOrSelf<LiteralExpressionSyntax>();
+
+        if (literal == null || !literal.IsKind(SyntaxKind.StringLiteralExpression))
+            return;
+
         var diagnostic = context.Diagnostics.FirstOrDefault();
         if (diagnostic is null || diagnostic.Properties.TryGetValue("key", out var key) is false || string.IsNullOrWhiteSpace(key))
             return;
@@ -57,14 +69,14 @@ public sealed class CreateLocalizationKeyCodeFixProvider : CodeFixProvider
             diagnostic);
     }
 
-    private static async Task<int> GetArgumentCountAsync(Document document, TextSpan span, System.Threading.CancellationToken token)
+    private static async Task<int> GetArgumentCountAsync(Document document, TextSpan span, CancellationToken token)
     {
         var root = await document.GetSyntaxRootAsync(token).ConfigureAwait(false);
         var node = root?.FindNode(span, getInnermostNodeForTie: true);
         return node?.FirstAncestorOrSelf<InvocationExpressionSyntax>()?.ArgumentList.Arguments.Count ?? 0;
     }
 
-    private static async Task<Solution> CreateKeyAsync(Project project, string key, int argumentCount, System.Threading.CancellationToken token)
+    private static async Task<Solution> CreateKeyAsync(Project project, string key, int argumentCount, CancellationToken token)
     {
         var solution = project.Solution;
         // Generated methods with arguments are produced from _Format keys with numbered placeholders.

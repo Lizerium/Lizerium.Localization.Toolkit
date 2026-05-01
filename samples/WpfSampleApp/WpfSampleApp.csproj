@@ -7,7 +7,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <LocalizationGeneratorDll>..\..\src\Lizerium.Localization.Generator\bin\$(Configuration)\netstandard2.0\Lizerium.Localization.Generator.dll</LocalizationGeneratorDll>
-    <LocalizationAnalyzerDll>..\..\src\Lizerium.Localization.Analyzer\bin\$(Configuration)\netstandard2.0\Lizerium.Localization.Analyzer.dll</LocalizationAnalyzerDll>
+	<LocalizationAnalyzerDll>..\..\src\Lizerium.Localization.Analyzer\bin\$(Configuration)\netstandard2.0\Lizerium.Localization.Analyzer.dll</LocalizationAnalyzerDll>
+	<LocalizationAnalyzerAiDll>..\..\src\Lizerium.Localization.Ai.Analyzer\bin\$(Configuration)\netstandard2.0\Lizerium.Localization.Ai.Analyzer.dll</LocalizationAnalyzerAiDll>
     <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
   </PropertyGroup>
 
@@ -19,6 +20,7 @@
     <AdditionalFiles Include="Resources\Localization\*.resx" />
     <Analyzer Include="$(LocalizationGeneratorDll)" Condition="Exists('$(LocalizationGeneratorDll)')" />
     <Analyzer Include="$(LocalizationAnalyzerDll)" Condition="Exists('$(LocalizationAnalyzerDll)')" />
+	<Analyzer Include="$(LocalizationAnalyzerAiDll)" Condition="Exists('$(LocalizationAnalyzerAiDll)')" />
     <Content Include="Resources\Localization\*.resx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -28,11 +30,12 @@
     <Content Include="Resources\logo.ico" />
   </ItemGroup>
 
-  <Target Name="BuildLocalizationAnalyzers" BeforeTargets="CoreCompile" Condition="!Exists('$(LocalizationGeneratorDll)') Or !Exists('$(LocalizationAnalyzerDll)')">
-    <MSBuild Projects="..\..\src\Lizerium.Localization.Generator\Lizerium.Localization.Generator.csproj;..\..\src\Lizerium.Localization.Analyzer\Lizerium.Localization.Analyzer.csproj" Targets="Build" Properties="Configuration=$(Configuration)" />
+  <Target Name="BuildLocalizationAnalyzers" BeforeTargets="CoreCompile" Condition="!Exists('$(LocalizationGeneratorDll)') Or !Exists('$(LocalizationAnalyzerDll)') Or !Exists('$(LocalizationAnalyzerAiDll)')">
+    <MSBuild Projects="..\..\src\Lizerium.Localization.Generator\Lizerium.Localization.Generator.csproj;..\..\src\Lizerium.Localization.Analyzer\Lizerium.Localization.Analyzer.csproj;..\..\src\Lizerium.Localization.Ai.Analyzer\Lizerium.Localization.Ai.Analyzer.csproj" Targets="Build" Properties="Configuration=$(Configuration)" />
     <ItemGroup>
       <Analyzer Include="$(LocalizationGeneratorDll)" />
       <Analyzer Include="$(LocalizationAnalyzerDll)" />
+	  <Analyzer Include="$(LocalizationAnalyzerAiDll)" />
     </ItemGroup>
   </Target>
 

@@ -24,5 +24,6 @@
     <file src="..\..\media\LOGO_400x400.png" target="" />
     <file src="..\Lizerium.Localization.Generator\bin\$configuration$\netstandard2.0\Lizerium.Localization.Generator.dll" target="analyzers/dotnet/cs" />
     <file src="..\Lizerium.Localization.Analyzer\bin\$configuration$\netstandard2.0\Lizerium.Localization.Analyzer.dll" target="analyzers/dotnet/cs" />
+    <file src="..\Lizerium.Localization.Ai.Analyzer\bin\$configuration$\netstandard2.0\Lizerium.Localization.Ai.Analyzer.dll" target="analyzers/dotnet/cs" />
   </files>
 </package>

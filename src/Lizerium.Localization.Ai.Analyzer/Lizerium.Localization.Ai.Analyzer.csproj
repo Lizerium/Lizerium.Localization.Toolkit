@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageId>Lizerium.Localization.Ai.Analyzer</PackageId>
+    <Version>1.0.0</Version>
+    <Title>Lizerium Localization Ai Analyzer</Title>
+    <Authors>Dvurechensky</Authors>
+    <Copyright>Copyright (c) Nikolay Dvurechensky</Copyright>
+    <PackageProjectUrl>https://github.com/Lizerium/Lizerium.Localization.Toolkit</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/Lizerium/Lizerium.Localization.Toolkit/blob/main/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/Lizerium/Lizerium.Localization.Toolkit</RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>Analyzer and CodeFix provider for Lizerium.Localization.Toolkit localization keys.</Description>
+    <PackageTags>Localization;RESX;Analyzer;CodeFix;Roslyn;WPF;AI;Lizerium;Dvurechensky</PackageTags>
+    <PackageIcon>LOGO_400x400.png</PackageIcon>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <PackageReadmeFile>analyzer.ai.md</PackageReadmeFile>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference
+      Include="Microsoft.CodeAnalysis.CSharp.Workspaces"
+      Version="4.12.0"
+      PrivateAssets="all"
+    />
+    <None Include="..\..\docs\analyzer.ai.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\media\LOGO_400x400.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <Target Name="AddAnalyzerFilesToPackage" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <None
+        Include="$(OutputPath)*.dll"
+        Pack="true"
+        PackagePath="analyzers/dotnet/cs"
+        Visible="false"
+      />
+    </ItemGroup>
+  </Target>
+</Project>
