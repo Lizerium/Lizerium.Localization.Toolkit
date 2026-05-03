@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+	<LangVersion>latest</LangVersion>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
+    <PackageId>Lizerium.AI.LocalizationAssistant.Core</PackageId>
+    <Version>1.0.2</Version>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
+    <Authors>Dvurechensky</Authors>
+    <Title>Lizerium AI Localization Assistant Core</Title>
+    <Description>Configurable AI localization helper library for Ollama and LibreTranslate workflows.</Description>
+    <PackageTags>Localization;AI;Ollama;LibreTranslate;RESX;Lizerium</PackageTags>
+    <PackageProjectUrl>https://github.com/Lizerium/Lizerium.Localization.Toolkit</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Lizerium/Lizerium.Localization.Toolkit</RepositoryUrl>
+    <PackageIcon>LOGO_400x400.png</PackageIcon>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageReadmeFile>ai-core.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Net.Http.Json" Version="10.0.7" />
+    <PackageReference Include="System.Text.Json" Version="10.0.7" />
+    <None Include="..\..\docs\ai-core.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\media\LOGO_400x400.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lizerium Localization Toolkit - AI RESX localization for .NET and WPF</title>
+  <meta name="description" content="Generate strongly typed .NET localization APIs, create RESX keys from C# and XAML, and use local AI translation through Ollama and LibreTranslate.">
+  <link rel="canonical" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/">
+  <link rel="alternate" hreflang="en" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/">
+  <link rel="alternate" hreflang="ru" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/">
+  <link rel="stylesheet" href="assets/site.css">
+  <script defer src="assets/language.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareSourceCode",
+    "name": "Lizerium.Localization.Toolkit",
+    "description": "AI assisted RESX localization toolkit for .NET and WPF.",
+    "programmingLanguage": "C#",
+    "runtimePlatform": ".NET 8",
+    "codeRepository": "https://github.com/Lizerium/Lizerium.Localization.Toolkit",
+    "license": "https://github.com/Lizerium/Lizerium.Localization.Toolkit/blob/main/LICENSE",
+    "applicationCategory": "DeveloperApplication"
+  }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell nav">
+      <a class="brand" href="./"><img src="https://raw.githubusercontent.com/Lizerium/Lizerium.Localization.Toolkit/main/media/LOGO_400x400.png" alt="">Lizerium.Localization.Toolkit</a>
+      <nav class="links" aria-label="Main navigation">
+        <select class="language-select" aria-label="Language" data-language-select>
+          <option selected data-url="./">English</option>
+          <option data-url="ru/">Русский</option>
+        </select>
+        <a href="#quick-start">Quick start</a>
+        <a href="#ai-config">AI config</a>
+        <a href="#docs">Docs</a>
+        <a href="#ecosystem">Ecosystem</a>
+        <a href="landing/auto-generate-translations.html">Guides</a>
+        <a href="https://github.com/Lizerium/Lizerium.Localization.Toolkit">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="shell">
+        <div class="eyebrow">.NET RESX localization with local AI</div>
+        <h1>Generate translations, RESX keys, C# APIs, and WPF XAML localization from one toolkit.</h1>
+        <p class="lead">Lizerium.Localization.Toolkit combines runtime localization, source generation, Roslyn analyzers, Visual Studio CodeFixes, a WPF XAML VSIX, and local AI translation through Ollama and LibreTranslate.</p>
+        <div class="actions">
+          <a class="button primary" href="#quick-start">Start with NuGet</a>
+          <a class="button" href="landing/xaml-wpf-localization.html">XAML light bulb</a>
+          <a class="button" href="landing/ai-localization-setup.html">Configure AI</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="quick-start">
+      <div class="shell">
+        <h2>Quick Start</h2>
+        <div class="grid two">
+          <div class="card">
+            <h3>Install the toolkit</h3>
+            <pre><code>&lt;PackageReference Include="Lizerium.Localization.Toolkit" Version="1.0.0" /&gt;</code></pre>
+            <p>Add `.resx` files as `AdditionalFiles` and `Content`, then use the generated `Generated.Localization.Localization` API.</p>
+          </div>
+          <div class="card">
+            <h3>Install the XAML VSIX</h3>
+            <pre><code>src\Lizerium.Localization.Xaml.Vsix\bin\Release\net472\Lizerium.Localization.Xaml.Vsix.vsix</code></pre>
+            <p>Use the Visual Studio light bulb to replace XAML literals with `{loc:Loc Key}` and create resource entries.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="ai-config">
+      <div class="shell">
+        <h2>AI Configuration Matrix</h2>
+        <table class="table">
+          <thead><tr><th>Tool</th><th>How to configure AI</th></tr></thead>
+          <tbody>
+            <tr><td>XAML VSIX</td><td><code>Tools -> Options -> Lizerium Localization -> AI Servers</code>, including timeout and fallback</td></tr>
+            <tr><td>NuGet C# analyzer</td><td>Environment variables before starting Visual Studio</td></tr>
+            <tr><td>Direct AI Core usage</td><td><code>AiLocalizationOptions</code></td></tr>
+            <tr><td>CI/build server</td><td>Environment variables</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shell">
+        <h2>Popular Guides</h2>
+        <div class="grid">
+          <a class="card" href="landing/auto-generate-translations.html"><h3>How to auto-generate translations?</h3><p>Use the AI CodeFix and XAML light bulb to create RESX keys automatically.</p></a>
+          <a class="card" href="landing/xaml-wpf-localization.html"><h3>How to localize WPF XAML?</h3><p>Convert `Content`, `Text`, `Title`, and selected text into `{loc:Loc Key}`.</p></a>
+          <a class="card" href="landing/ai-localization-setup.html"><h3>How to configure Ollama?</h3><p>Set local AI servers for VSIX, NuGet analyzers, and direct AI Core usage.</p></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="docs">
+      <div class="shell">
+        <h2>Documentation</h2>
+        <p class="muted">GitHub Pages renders repository Markdown docs as HTML pages, so these links can be indexed and shared directly.</p>
+        <div class="grid two">
+          <div class="card">
+            <h3>Product docs</h3>
+            <ul class="link-list">
+              <li><a href="toolkit.html">Toolkit</a></li>
+              <li><a href="core.html">Core runtime</a></li>
+              <li><a href="generator.html">Source generator</a></li>
+              <li><a href="analyzer.html">Analyzer</a></li>
+              <li><a href="analyzer.ai.html">AI analyzer</a></li>
+              <li><a href="ai-core.html">AI Core</a></li>
+              <li><a href="xaml-vsix.html">XAML VSIX</a></li>
+              <li><a href="gui.html">GUI editor</a></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Russian docs</h3>
+            <ul class="link-list">
+              <li><a href="toolkit.ru.html">Toolkit RU</a></li>
+              <li><a href="core.ru.html">Core RU</a></li>
+              <li><a href="generator.ru.html">Generator RU</a></li>
+              <li><a href="analyzer.ru.html">Analyzer RU</a></li>
+              <li><a href="analyzer.ai.ru.html">AI Analyzer RU</a></li>
+              <li><a href="ai-core.ru.html">AI Core RU</a></li>
+              <li><a href="xaml-vsix.ru.html">XAML VSIX RU</a></li>
+              <li><a href="gui.ru.html">GUI RU</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="ecosystem">
+      <div class="shell">
+        <h2>Related Dvurechensky And Lizerium Resources</h2>
+        <div class="card">
+          <ul class="link-list">
+            <li><a href="https://dvurechensky.pro">Dvurechensky</a></li>
+            <li><a href="https://lizup.ru/">Lizerium Portal</a></li>
+            <li><a href="https://shields.dvurechensky.pro/">Russian Shields.io</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/ProjectBasedLearning/">Project Based Learning</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/Internet/">API list</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/Gitignore/">Gitignore</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/WebFrontendKnowledge/">Web Frontend Knowledge</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/GeneralDocsMarkdown/">General Docs Markdown</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/BasicKnowledgeCSharp/">Basic Knowledge C#</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/PatternsCSharpProgramming/">Patterns C# Programming</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/InterviewCSharpNet/">Interview C# .NET</a></li>
+            <li><a href="https://dvurechensky.github.io/Freelancer.Reverse.Runtime/">Freelancer.Reverse.Runtime</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell">MIT licensed. Built for .NET, WPF, RESX, Visual Studio, and local-first AI localization.</div>
+  </footer>
+</body>
+</html>

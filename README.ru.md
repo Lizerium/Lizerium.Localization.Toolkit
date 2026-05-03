@@ -8,68 +8,34 @@
     <img src="https://shields.dvurechensky.pro/nuget/dt/Lizerium.Localization.Toolkit">
 </p>
 
-<div align="center" style="margin: 20px 0; padding: 10px; background: #1c1917; border-radius: 10px;">
-  <strong>🌐 Language: </strong>
-  
-  <span style="color: #0891b2; margin: 0 10px;">
-    ✅ 🇷🇺 Russian (current)
-  </span>
-  | 
-  <a href="./README.md" style="color: #F5F752; margin: 0 10px;">
-    🇺🇸 English
-  </a>
-</div>
+<p align="center">
+  <strong>Язык:</strong>
+  Русский |
+  <a href="./README.md">English</a>
+</p>
 
----
+`Lizerium.Localization.Toolkit` - набор инструментов для локализации .NET/WPF проектов на `.resx`: runtime, source generator, analyzer, CodeFix, AI-генерация переводов, XAML VSIX и WPF редактор ресурсов.
 
-> [!NOTE]
-> Этот проект является частью экосистемы **Lizerium** и относится к направлению:
->
-> - [`Lizerium.Tools.Structs`](https://github.com/Lizerium/Lizerium.Tools.Structs)
->
-> Если вы ищете связанные инженерные и вспомогательные инструменты, начните оттуда.
-
----
-
-`Lizerium.Localization.Toolkit` — рабочий набор для локализации .NET-проектов, которые хранят переводы в `.resx`. В одном процессе он закрывает runtime-загрузку переводов, генерацию строго типизированного API, диагностику Roslyn, CodeFix в Visual Studio и отдельный WPF-редактор переводов.
-
-Основной пакет для приложений:
+## Установка
 
 ```xml
 <PackageReference Include="Lizerium.Localization.Toolkit" Version="1.0.0" />
 ```
 
-Он подключает runtime-пакет и регистрирует generator/analyzer из NuGet-пакета через `analyzers/dotnet/cs`.
+## Что входит
 
-## Пакеты
-
-| Пакет                             | Назначение                                                             |
-| --------------------------------- | ---------------------------------------------------------------------- |
-| `Lizerium.Localization.Toolkit`   | Пакет “всё в одном”: runtime, generator, analyzer и code fix           |
-| `Lizerium.Localization.Core`      | Runtime-чтение/запись `.resx` и `LocalizationService`                  |
-| `Lizerium.Localization.Generator` | Incremental source generator для `Generated.Localization.Localization` |
-| `Lizerium.Localization.Analyzer`  | Analyzer и CodeFix provider для отсутствующих ключей                   |
-| `Lizerium.Localization.GUI`       | Отдельный WPF-редактор переводов                                       |
-
-Раздельные пакеты нужны только если тебе требуется свой layout зависимостей:
-
-```xml
-<PackageReference Include="Lizerium.Localization.Core" Version="1.0.0" />
-
-<PackageReference Include="Lizerium.Localization.Generator" Version="1.0.0"
-                  OutputItemType="Analyzer"
-                  ReferenceOutputAssembly="false"
-                  PrivateAssets="all" />
-
-<PackageReference Include="Lizerium.Localization.Analyzer" Version="1.0.0"
-                  OutputItemType="Analyzer"
-                  ReferenceOutputAssembly="false"
-                  PrivateAssets="all" />
-```
+| Пакет | Назначение |
+| --- | --- |
+| `Lizerium.Localization.Toolkit` | All-in-one пакет: runtime, generator, analyzer, AI CodeFix |
+| `Lizerium.Localization.Core` | Runtime `.resx`, `LocalizationService`, WPF `{loc:Loc}` |
+| `Lizerium.Localization.Generator` | Source generator для `Generated.Localization.Localization` |
+| `Lizerium.Localization.Analyzer` | Проверка отсутствующих ключей и CodeFix |
+| `Lizerium.Localization.Ai.Analyzer` | AI CodeFix для C# строк и interpolated strings |
+| `Lizerium.AI.LocalizationAssistant.Core` | Конфигурируемое AI ядро для Ollama/LibreTranslate |
+| `Lizerium.Localization.Xaml.Vsix` | Лампочка Visual Studio для WPF XAML |
+| `Lizerium.Localization.GUI` | WPF редактор `.resx` переводов |
 
 ## Настройка проекта
-
-Создай файлы переводов:
 
 ```text
 Resources/
@@ -77,8 +43,6 @@ Resources/
     Strings.en.resx
     Strings.ru.resx
 ```
-
-Добавь их в `.csproj`:
 
 ```xml
 <ItemGroup>
@@ -89,149 +53,74 @@ Resources/
 </ItemGroup>
 ```
 
-`AdditionalFiles` нужны generator/analyzer. `Content` копирует `.resx` рядом с приложением, чтобы runtime-сервис мог их прочитать.
-
-## Использование Runtime
-
-Один раз настрой сервис при запуске:
+## Runtime
 
 ```csharp
 using Lizerium.Localization.Core;
+using L = Generated.Localization.Localization;
 
 LocalizationService.Instance.Configure(
     Path.Combine(AppContext.BaseDirectory, "Resources", "Localization"));
 
-LocalizationService.Instance.ChangeLanguage("en");
-```
-
-Используй сгенерированный API:
-
-```csharp
-using L = Generated.Localization.Localization;
+LocalizationService.Instance.ChangeLanguage("ru");
 
 var title = L.MainWindow.Title();
-var message = L.MainWindow.Log.DirectoryCorrect(AppContext.BaseDirectory);
 ```
 
-## Именование ключей
+## AI локализация C# строк
 
-Ключи делятся по `_` и превращаются во вложенные классы и методы.
-
-| RESX-ключ                         | Сгенерированный API                            |
-| --------------------------------- | ---------------------------------------------- |
-| `MainWindow_Title`                | `Localization.MainWindow.Title()`              |
-| `FactionView_Tooltip_Highlight`   | `Localization.FactionView.Tooltip.Highlight()` |
-| `Settings_Log_FileCreated_Format` | `Localization.Settings.Log.FileCreated(arg0)`  |
-
-Для строк с параметрами используй `_Format`:
-
-```xml
-<data name="MainWindow_Log_DirectoryCorrect_Format" xml:space="preserve">
-  <value>Directory is correct: {0}</value>
-</data>
-```
-
-## Диагностика и CodeFix
-
-Generator сообщает:
-
-| ID       | Значение                                         |
-| -------- | ------------------------------------------------ |
-| `LOC001` | Ключ есть в одном языке, но отсутствует в другом |
-| `LOC002` | Количество placeholders отличается между языками |
-
-Analyzer сообщает:
-
-| ID       | Значение                                                          |
-| -------- | ----------------------------------------------------------------- |
-| `LOC100` | В коде вызван метод локализации, но подходящего `.resx`-ключа нет |
-
-Можно сначала написать вызов:
+Analyzer предлагает CodeFix на обычных строках и interpolated strings:
 
 ```csharp
-using L = Generated.Localization.Localization;
-
-check.ToolTip = L.FactionView.TooltipHighlight();
+var title = "Hello World";
+var details = $"Log directory: {AppContext.BaseDirectory} | {5}";
 ```
 
-Затем использовать:
+Для NuGet analyzer настройки AI задаются переменными окружения до запуска Visual Studio:
 
 ```text
-Ctrl + . -> Create localization key
+LIZERIUM_OLLAMA_URL=http://localhost:11434
+LIZERIUM_OLLAMA_MODEL=qwen2.5:7b
+LIZERIUM_OLLAMA_GENERATE_ENDPOINT=/api/generate
+LIZERIUM_LIBRETRANSLATE_URL=http://localhost:5000
+LIZERIUM_AI_TIMEOUT_SECONDS=30
 ```
 
-Для вызова без параметров CodeFix добавит:
+Если Ollama работает на `http://localhost:11434`, можно оставить значения по умолчанию.
+
+## XAML локализация
+
+Для runtime XAML:
 
 ```xml
-<data name="FactionView_TooltipHighlight" xml:space="preserve">
-  <value>TODO</value>
-</data>
+xmlns:loc="clr-namespace:Lizerium.Localization.Core;assembly=Lizerium.Localization.Core"
 ```
-
-Для вызова с параметрами:
-
-```csharp
-var text = L.MainWindow.TestParam.CreateValue(path, "param2", 5);
-```
-
-CodeFix добавит:
 
 ```xml
-<data name="MainWindow_TestParam_CreateValue_Format" xml:space="preserve">
-  <value>TODO {0} {1} {2}</value>
-</data>
+<Button Content="{loc:Loc MainWindow_Button_English}" />
 ```
 
-После добавления ключей сделай rebuild проекта, чтобы generator обновил строго типизированный API.
-
-## GUI-редактор
-
-`Lizerium.Localization.GUI` — отдельный WPF-редактор переводов. Он открывает папку проекта, находит `.resx`, сравнивает `en` и `ru`, показывает отсутствующие переводы, находит mismatch placeholders, позволяет редактировать значения inline и сохраняет изменения.
-
-Публикация desktop-приложения:
-
-```powershell
-dotnet publish src\Lizerium.Localization.GUI\Lizerium.Localization.GUI.csproj -c Release -r win-x64 --self-contained false -o artifacts\gui
-```
-
-Его можно добавить в Visual Studio через `Tools -> External Tools...`:
+Для лампочки Visual Studio установите VSIX:
 
 ```text
-Title:     Lizerium Localization
-Command:   path\to\Lizerium.Localization.GUI.exe
-Arguments: $(ProjectDir)
+src\Lizerium.Localization.Xaml.Vsix\bin\Release\net472\Lizerium.Localization.Xaml.Vsix.vsix
 ```
 
-## Сборка пакетов
+Настройки AI для VSIX находятся здесь:
 
-Локальная сборка NuGet-пакетов:
-
-```powershell
-dotnet pack src\Lizerium.Localization.Core\Lizerium.Localization.Core.csproj -c Release -o artifacts\nuget
-dotnet pack src\Lizerium.Localization.Generator\Lizerium.Localization.Generator.csproj -c Release -o artifacts\nuget
-dotnet pack src\Lizerium.Localization.Analyzer\Lizerium.Localization.Analyzer.csproj -c Release -o artifacts\nuget
-dotnet pack src\Lizerium.Localization.Toolkit\Lizerium.Localization.Toolkit.csproj -c Release -o artifacts\nuget
-dotnet pack src\Lizerium.Localization.GUI\Lizerium.Localization.GUI.csproj -c Release -o artifacts\nuget
+```text
+Tools -> Options -> Lizerium Localization -> AI Servers
 ```
 
-Установка из локального feed:
+## Документация и сайт
+
+- Markdown docs: [`docs/README.ru.md`](docs/README.ru.md)
+- GitHub Pages entry: [`docs/index.html`](docs/index.html)
+- Русская страница сайта: [`docs/ru/index.html`](docs/ru/index.html)
+
+## Сборка
 
 ```powershell
-dotnet nuget add source .\artifacts\nuget -n LizeriumLocal
-dotnet add path\to\YourProject.csproj package Lizerium.Localization.Toolkit --version 1.0.0 --source .\artifacts\nuget
-```
-
-Если во время тестов пересобираешь тот же version `1.0.0`, очисти локальный cache NuGet:
-
-```powershell
-dotnet nuget locals global-packages --clear
-```
-
-## Пример
-
-Смотри `samples/WpfSampleApp`: там есть минимальный WPF-проект с `.resx`, использованием generated API, runtime-настройкой и переключением языка.
-
-```powershell
-dotnet build samples\WpfSampleApp\WpfSampleApp.csproj
-dotnet run --project samples\WpfSampleApp\WpfSampleApp.csproj
+dotnet build Lizerium.Localization.Toolkit.sln -c Release
+dotnet test Lizerium.Localization.Toolkit.sln -c Release --no-build
 ```

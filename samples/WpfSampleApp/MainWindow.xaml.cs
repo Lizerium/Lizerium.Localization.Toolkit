@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 02 мая 2026 19:17:07
- * Version: 1.0.5
+ * Last Updated: 03 мая 2026 06:52:43
+ * Version: 1.0.6
  */
 
 using System.IO;
@@ -48,6 +48,11 @@ public partial class MainWindow : Window
         // These calls demonstrate CodeFix-generated keys for parameterless and parameterized values.
         var msgLog = L.MainWindow.TestMsgLog();
         var paramMsgLog = L.MainWindow.TestParam.CreateValue(AppContext.BaseDirectory, "param2", 5);
-        var wadaw = "dawdaw";
+        var test = L.MainWindow.Render.Text2();
+        var testParams = L.MainWindow.Render.Text1(AppContext.BaseDirectory, 5);
+        var test2 = L.MainWindow.Render.Text3();
+        var test3 = L.MainWindow.Render.Text4(AppContext.BaseDirectory);
+        var test4 = L.MainWindow.Render.Text5();
+        var test5Params = L.MainWindow.Render.Text6(AppContext.BaseDirectory);
     }
 }

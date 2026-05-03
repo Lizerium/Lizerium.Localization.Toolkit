@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/" />
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/" />
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/auto-generate-translations.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/auto-generate-translations.html" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/landing/kak-avtogenerirovat-perevody.html" />
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/landing/kak-avtogenerirovat-perevody.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/auto-generate-translations.html" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/landing/kak-avtogenerirovat-perevody.html" />
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/xaml-wpf-localization.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/xaml-wpf-localization.html" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/landing/lokalizaciya-wpf-xaml.html" />
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/landing/lokalizaciya-wpf-xaml.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/xaml-wpf-localization.html" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/landing/lokalizaciya-wpf-xaml.html" />
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/ai-localization-setup.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/ai-localization-setup.html" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/landing/nastroika-ai-lokalizacii.html" />
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/landing/nastroika-ai-lokalizacii.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/ai-localization-setup.html" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/landing/nastroika-ai-lokalizacii.html" />
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/resx-source-generator.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/toolkit.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/toolkit.ru.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/xaml-vsix.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.68</priority>
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/xaml-vsix.ru.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.68</priority>
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/ai-core.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/ai-core.ru.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/analyzer.ai.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>
+  <url>
+    <loc>https://lizerium.github.io/Lizerium.Localization.Toolkit/analyzer.ai.ru.html</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>
+</urlset>

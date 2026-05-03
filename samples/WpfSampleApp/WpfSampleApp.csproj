@@ -13,18 +13,28 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Lizerium.Localization.Core\Lizerium.Localization.Core.csproj" />
+    <ProjectReference Include="..\..\src\Lizerium.Localization.Core\Lizerium.Localization.Core.csproj" SetTargetFramework="TargetFramework=net8.0-windows" />
   </ItemGroup>
 
   <ItemGroup>
     <AdditionalFiles Include="Resources\Localization\*.resx" />
     <Analyzer Include="$(LocalizationGeneratorDll)" Condition="Exists('$(LocalizationGeneratorDll)')" />
     <Analyzer Include="$(LocalizationAnalyzerDll)" Condition="Exists('$(LocalizationAnalyzerDll)')" />
-	<Analyzer Include="$(LocalizationAnalyzerAiDll)" Condition="Exists('$(LocalizationAnalyzerAiDll)')" />
     <Content Include="Resources\Localization\*.resx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+	<ItemGroup>
+		<Analyzer Include="$(LocalizationAnalyzerAiDll)" />
+
+		<Analyzer Include="..\..\src\Lizerium.Localization.Ai.Analyzer\bin\$(Configuration)\netstandard2.0\*.dll"
+				  Exclude="
+              $(LocalizationAnalyzerAiDll);
+              **\Microsoft.CodeAnalysis*.dll;
+              **\System.Composition*.dll
+            " />
+	</ItemGroup>
 
   <ItemGroup>
     <Content Include="Resources\logo.ico" />

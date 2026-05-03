@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WPF XAML localization with Visual Studio light bulb</title>
+  <meta name="description" content="Convert WPF XAML Content, Text, Title, and selected UI text into Lizerium {loc:Loc Key} markup and RESX translations.">
+  <link rel="canonical" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/xaml-wpf-localization.html">
+  <link rel="alternate" hreflang="ru" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/landing/lokalizaciya-wpf-xaml.html">
+  <link rel="stylesheet" href="../assets/site.css">
+  <script defer src="../assets/language.js"></script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"TechArticle","headline":"WPF XAML localization with Visual Studio light bulb","about":["WPF","XAML","RESX localization","Visual Studio extension"],"author":{"@type":"Organization","name":"Lizerium"}}
+  </script>
+</head>
+<body>
+  <header class="topbar"><div class="shell nav"><a class="brand" href="../"><img src="https://raw.githubusercontent.com/Lizerium/Lizerium.Localization.Toolkit/main/media/LOGO_400x400.png" alt="">Lizerium</a><nav class="links"><a href="../">Home</a><select class="language-select" aria-label="Language" data-language-select><option selected data-url="./xaml-wpf-localization.html">English</option><option data-url="../ru/landing/lokalizaciya-wpf-xaml.html">Русский</option></select></nav></div></header>
+  <main class="section"><div class="shell article">
+    <h1>WPF XAML localization with a Visual Studio light bulb</h1>
+    <p class="lead">Install `Lizerium.Localization.Xaml.Vsix`, place the caret inside a literal, and convert UI text into `{loc:Loc Key}` with generated RESX entries.</p>
+    <h2>Before</h2>
+    <pre><code>&lt;Window Title="Localization Sample"&gt;
+  &lt;Button Content="English" /&gt;
+&lt;/Window&gt;</code></pre>
+    <h2>After</h2>
+    <pre><code>&lt;Window
+  xmlns:loc="clr-namespace:Lizerium.Localization.Core;assembly=Lizerium.Localization.Core"
+  Title="{loc:Loc MainWindow_Title_LocalizationSample}"&gt;
+  &lt;Button Content="{loc:Loc MainWindow_Button_Content_English}" /&gt;
+&lt;/Window&gt;</code></pre>
+    <h2>AI settings</h2>
+    <p>Use <code>Tools -> Options -> Lizerium Localization -> AI Servers</code> to configure Ollama, model, endpoint, LibreTranslate URL, and fallback behavior.</p>
+  </div></main>
+  <footer class="footer"><div class="shell"><a href="../xaml-vsix.md">VSIX markdown docs</a></div></footer>
+</body>
+</html>

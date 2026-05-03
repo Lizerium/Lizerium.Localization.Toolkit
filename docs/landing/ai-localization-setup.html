@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Configure Ollama and LibreTranslate for .NET AI localization</title>
+  <meta name="description" content="Set up local AI translation servers for Lizerium.Localization.Toolkit, Visual Studio VSIX, NuGet analyzer, and direct AI Core usage.">
+  <link rel="canonical" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/ai-localization-setup.html">
+  <link rel="alternate" hreflang="ru" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/landing/nastroika-ai-lokalizacii.html">
+  <link rel="stylesheet" href="../assets/site.css">
+  <script defer src="../assets/language.js"></script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I configure AI for the XAML VSIX?","acceptedAnswer":{"@type":"Answer","text":"Use Tools -> Options -> Lizerium Localization -> AI Servers in Visual Studio."}},{"@type":"Question","name":"How do I configure AI for the NuGet analyzer?","acceptedAnswer":{"@type":"Answer","text":"Set LIZERIUM_OLLAMA_URL, LIZERIUM_OLLAMA_MODEL, LIZERIUM_OLLAMA_GENERATE_ENDPOINT, and LIZERIUM_LIBRETRANSLATE_URL before starting Visual Studio."}}]}
+  </script>
+</head>
+<body>
+  <header class="topbar"><div class="shell nav"><a class="brand" href="../"><img src="https://raw.githubusercontent.com/Lizerium/Lizerium.Localization.Toolkit/main/media/LOGO_400x400.png" alt="">Lizerium</a><nav class="links"><a href="../">Home</a><select class="language-select" aria-label="Language" data-language-select><option selected data-url="./ai-localization-setup.html">English</option><option data-url="../ru/landing/nastroika-ai-lokalizacii.html">Русский</option></select></nav></div></header>
+  <main class="section"><div class="shell article">
+    <h1>Configure Ollama and LibreTranslate for AI localization</h1>
+    <p class="lead">The same AI core supports Visual Studio VSIX, NuGet analyzers, CI, and custom tools.</p>
+    <h2>Visual Studio VSIX</h2>
+    <pre><code>Tools -> Options -> Lizerium Localization -> AI Servers</code></pre>
+    <h2>NuGet analyzer and CI</h2>
+    <pre><code>LIZERIUM_OLLAMA_URL=http://localhost:11434
+LIZERIUM_OLLAMA_MODEL=qwen2.5:7b
+LIZERIUM_OLLAMA_GENERATE_ENDPOINT=/api/generate
+LIZERIUM_LIBRETRANSLATE_URL=http://localhost:5000
+LIZERIUM_AI_TIMEOUT_SECONDS=30</code></pre>
+    <h2>Direct AI Core usage</h2>
+    <pre><code>var options = AiLocalizationOptions.FromEnvironment();
+var service = new AILocalizationService(options);</code></pre>
+  </div></main>
+  <footer class="footer"><div class="shell"><a href="../ai-core.md">AI Core docs</a></div></footer>
+</body>
+</html>

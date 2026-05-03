@@ -46,10 +46,12 @@ It brings the runtime package and registers the generator/analyzer from the NuGe
 | Package                           | Purpose                                                                         |
 | --------------------------------- | ------------------------------------------------------------------------------- |
 | `Lizerium.Localization.Toolkit`   | All-in-one package for applications: runtime, generator, analyzer, and code fix |
-| `Lizerium.Localization.Core`      | Runtime `.resx` reader/writer and `LocalizationService`                         |
+| `Lizerium.Localization.Core`      | Runtime `.resx` reader/writer, `LocalizationService`, and WPF XAML `{loc:Loc}`  |
 | `Lizerium.Localization.Generator` | Incremental source generator for `Generated.Localization.Localization`          |
 | `Lizerium.Localization.Analyzer`  | Analyzer and CodeFix provider for missing localization keys                     |
+| `Lizerium.Localization.Ai.Analyzer` | AI CodeFix for C# string and interpolated string localization                 |
 | `Lizerium.Localization.GUI`       | Standalone WPF translation editor                                               |
+| `Lizerium.Localization.Xaml.Vsix` | Visual Studio XAML light bulb for WPF text localization                         |
 
 Use separate packages only when you need a custom package layout:
 
@@ -111,6 +113,19 @@ using L = Generated.Localization.Localization;
 
 var title = L.MainWindow.Title();
 var message = L.MainWindow.Log.DirectoryCorrect(AppContext.BaseDirectory);
+```
+
+For WPF XAML, add the localization namespace:
+
+```xml
+xmlns:loc="clr-namespace:Lizerium.Localization.Core;assembly=Lizerium.Localization.Core"
+```
+
+Then use RESX keys directly in markup:
+
+```xml
+<Button Content="{loc:Loc MainWindow_Button_English}" />
+<TextBlock Text="{loc:Loc MainWindow_Title}" />
 ```
 
 ## Key Naming
@@ -184,6 +199,58 @@ the code fix adds:
 
 Rebuild the project after adding keys so the generator can refresh the strongly typed API.
 
+## AI String Code Fix
+
+`Lizerium.Localization.Ai.Analyzer` offers:
+
+```text
+Ctrl + . -> Create localization key (AI)
+```
+
+on ordinary C# strings and interpolated strings:
+
+```csharp
+var title = "Hello World";
+var details = $"Log directory: {AppContext.BaseDirectory} | {5}";
+```
+
+Interpolated strings are stored as RESX format values such as `Log directory: {0} | {1}` and replaced with generated calls that pass the original expressions as arguments.
+
+The NuGet analyzer reads AI server settings from environment variables:
+
+```text
+LIZERIUM_OLLAMA_URL
+LIZERIUM_OLLAMA_MODEL
+LIZERIUM_OLLAMA_GENERATE_ENDPOINT
+LIZERIUM_LIBRETRANSLATE_URL
+LIZERIUM_AI_TIMEOUT_SECONDS
+```
+
+For direct use of the AI NuGet package, configure `AiLocalizationOptions` and pass it to `AILocalizationService`.
+
+## XAML Conversion
+
+`Lizerium.Localization.Core.XamlLocalizationService` provides reusable conversion logic for tools and editor extensions:
+
+```csharp
+var xaml = new XamlLocalizationService();
+xaml.LocalizeText(
+    "MainWindow.xaml",
+    "English",
+    "MainWindow_Button_English",
+    "Resources/Localization");
+```
+
+It replaces values such as `Content="English"` with `Content="{loc:Loc MainWindow_Button_English}"`, adds `xmlns:loc` when needed, and writes the key to `Strings.en.resx` and `Strings.ru.resx`.
+
+For Visual Studio 2022, the `Lizerium.Localization.Xaml.Vsix` project provides the editor light bulb. After installing the generated VSIX, place the caret inside a XAML literal or select any UI text and choose:
+
+```text
+Create XAML localization key
+```
+
+The VSIX writes diagnostics to `%TEMP%/Lizerium.Localization.Xaml.Vsix.log`.
+
 ## GUI Editor
 
 `Lizerium.Localization.GUI` is a standalone WPF editor for translation files. It can open a project folder, find `.resx` files, compare `en` and `ru`, highlight missing translations, detect placeholder mismatches, edit values inline, and save changes.
@@ -235,3 +302,12 @@ See `samples/WpfSampleApp` for a minimal WPF project with `.resx` files, generat
 dotnet build samples\WpfSampleApp\WpfSampleApp.csproj
 dotnet run --project samples\WpfSampleApp\WpfSampleApp.csproj
 ```
+
+## Documentation Site
+
+The `docs/` folder contains both repository markdown docs and a static GitHub Pages site with English/Russian landing pages, JSON-LD metadata, `sitemap.xml`, and `robots.txt`.
+
+Entry points:
+
+- `docs/index.html`
+- `docs/ru/index.html`

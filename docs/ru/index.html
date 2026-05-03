@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lizerium Localization Toolkit - AI локализация RESX для .NET и WPF</title>
+  <meta name="description" content="Автоматическая генерация RESX ключей, переводов, C# API и WPF XAML локализации через локальный AI, Ollama и LibreTranslate.">
+  <link rel="canonical" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/">
+  <link rel="alternate" hreflang="en" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/">
+  <link rel="alternate" hreflang="ru" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/">
+  <link rel="stylesheet" href="../assets/site.css">
+  <script defer src="../assets/language.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareSourceCode",
+    "name": "Lizerium.Localization.Toolkit",
+    "description": "AI инструмент локализации RESX для .NET и WPF.",
+    "programmingLanguage": "C#",
+    "runtimePlatform": ".NET 8",
+    "codeRepository": "https://github.com/Lizerium/Lizerium.Localization.Toolkit",
+    "applicationCategory": "DeveloperApplication"
+  }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell nav">
+      <a class="brand" href="./"><img src="https://raw.githubusercontent.com/Lizerium/Lizerium.Localization.Toolkit/main/media/LOGO_400x400.png" alt="">Lizerium.Localization.Toolkit</a>
+      <nav class="links" aria-label="Навигация">
+        <select class="language-select" aria-label="Язык" data-language-select>
+          <option data-url="../">English</option>
+          <option selected data-url="./">Русский</option>
+        </select>
+        <a href="#start">Старт</a>
+        <a href="#ai-config">AI настройки</a>
+        <a href="#docs">Доки</a>
+        <a href="#ecosystem">Экосистема</a>
+        <a href="landing/kak-avtogenerirovat-perevody.html">Гайды</a>
+        <a href="https://github.com/Lizerium/Lizerium.Localization.Toolkit">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="shell">
+        <div class="eyebrow">RESX локализация .NET с локальным AI</div>
+        <h1>Автогенерация переводов, RESX ключей, C# API и WPF XAML локализации.</h1>
+        <p class="lead">Lizerium.Localization.Toolkit объединяет runtime, source generator, Roslyn analyzers, Visual Studio CodeFix, XAML VSIX и локальные AI переводы через Ollama и LibreTranslate.</p>
+        <div class="actions">
+          <a class="button primary" href="#start">Начать с NuGet</a>
+          <a class="button" href="landing/lokalizaciya-wpf-xaml.html">XAML лампочка</a>
+          <a class="button" href="landing/nastroika-ai-lokalizacii.html">Настроить AI</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="start">
+      <div class="shell">
+        <h2>Быстрый старт</h2>
+        <div class="grid two">
+          <div class="card">
+            <h3>NuGet пакет</h3>
+            <pre><code>&lt;PackageReference Include="Lizerium.Localization.Toolkit" Version="1.0.0" /&gt;</code></pre>
+            <p>Добавьте `.resx` как `AdditionalFiles` и `Content`, затем используйте сгенерированный API.</p>
+          </div>
+          <div class="card">
+            <h3>VSIX для XAML</h3>
+            <pre><code>src\Lizerium.Localization.Xaml.Vsix\bin\Release\net472\Lizerium.Localization.Xaml.Vsix.vsix</code></pre>
+            <p>Лампочка Visual Studio заменяет XAML текст на `{loc:Loc Key}` и создает записи в ресурсах.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="ai-config">
+      <div class="shell">
+        <h2>Где настраивать AI</h2>
+        <table class="table">
+          <thead><tr><th>Инструмент</th><th>Настройка</th></tr></thead>
+          <tbody>
+            <tr><td>XAML VSIX</td><td><code>Tools -> Options -> Lizerium Localization -> AI Servers</code>, включая timeout и fallback</td></tr>
+            <tr><td>NuGet C# analyzer</td><td>Переменные окружения до запуска Visual Studio</td></tr>
+            <tr><td>Прямое использование AI Core</td><td><code>AiLocalizationOptions</code></td></tr>
+            <tr><td>CI/build server</td><td>Переменные окружения</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shell">
+        <h2>Популярные сценарии</h2>
+        <div class="grid">
+          <a class="card" href="landing/kak-avtogenerirovat-perevody.html"><h3>Как автогенерировать переводы?</h3><p>AI CodeFix и XAML лампочка создают ключи и переводы автоматически.</p></a>
+          <a class="card" href="landing/lokalizaciya-wpf-xaml.html"><h3>Как локализовать WPF XAML?</h3><p>Преобразуйте `Content`, `Text`, `Title` и выделенный текст в `{loc:Loc Key}`.</p></a>
+          <a class="card" href="landing/nastroika-ai-lokalizacii.html"><h3>Как настроить Ollama?</h3><p>Настройка локального AI для VSIX, NuGet analyzer и AI Core.</p></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="docs">
+      <div class="shell">
+        <h2>Документация</h2>
+        <p class="muted">GitHub Pages рендерит markdown-файлы как HTML, поэтому эти страницы можно отдавать в поиск и ссылаться на них из портала.</p>
+        <div class="grid two">
+          <div class="card">
+            <h3>Русские страницы</h3>
+            <ul class="link-list">
+              <li><a href="../toolkit.ru.html">Toolkit RU</a></li>
+              <li><a href="../core.ru.html">Core RU</a></li>
+              <li><a href="../generator.ru.html">Generator RU</a></li>
+              <li><a href="../analyzer.ru.html">Analyzer RU</a></li>
+              <li><a href="../analyzer.ai.ru.html">AI Analyzer RU</a></li>
+              <li><a href="../ai-core.ru.html">AI Core RU</a></li>
+              <li><a href="../xaml-vsix.ru.html">XAML VSIX RU</a></li>
+              <li><a href="../gui.ru.html">GUI RU</a></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>English docs</h3>
+            <ul class="link-list">
+              <li><a href="../toolkit.html">Toolkit</a></li>
+              <li><a href="../core.html">Core runtime</a></li>
+              <li><a href="../generator.html">Source generator</a></li>
+              <li><a href="../analyzer.html">Analyzer</a></li>
+              <li><a href="../analyzer.ai.html">AI analyzer</a></li>
+              <li><a href="../ai-core.html">AI Core</a></li>
+              <li><a href="../xaml-vsix.html">XAML VSIX</a></li>
+              <li><a href="../gui.html">GUI editor</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="ecosystem">
+      <div class="shell">
+        <h2>Связанные ресурсы Dvurechensky и Lizerium</h2>
+        <div class="card">
+          <ul class="link-list">
+            <li><a href="https://dvurechensky.pro">Dvurechensky</a></li>
+            <li><a href="https://lizup.ru/">Lizerium Portal</a></li>
+            <li><a href="https://shields.dvurechensky.pro/">Русский Shields.io</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/ProjectBasedLearning/">Project Based Learning</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/Internet/">API-список</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/Gitignore/">Gitignore</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/WebFrontendKnowledge/">Web Frontend Knowledge</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/GeneralDocsMarkdown/">General Docs Markdown</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/BasicKnowledgeCSharp/">Basic Knowledge C#</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/PatternsCSharpProgramming/">Patterns C# Programming</a></li>
+            <li><a href="https://dvurechensky-docs.github.io/InterviewCSharpNet/">Interview C# .NET</a></li>
+            <li><a href="https://dvurechensky.github.io/Freelancer.Reverse.Runtime/">Freelancer.Reverse.Runtime</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell">MIT license. Инструменты для .NET, WPF, RESX, Visual Studio и локальной AI локализации.</div>
+  </footer>
+</body>
+</html>

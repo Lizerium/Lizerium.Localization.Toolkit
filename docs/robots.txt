@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lizerium.github.io/Lizerium.Localization.Toolkit/sitemap.xml
+

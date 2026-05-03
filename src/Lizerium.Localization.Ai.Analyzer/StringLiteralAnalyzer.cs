@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 02 мая 2026 19:17:07
- * Version: 1.0.5
+ * Last Updated: 03 мая 2026 06:52:43
+ * Version: 1.0.6
  */
 
 using System.Collections.Immutable;
@@ -37,15 +37,17 @@ namespace Lizerium.Localization.Ai.Analyzer
 
             context.RegisterSyntaxNodeAction(ctx =>
             {
-                var literal = (LiteralExpressionSyntax)ctx.Node;
+                switch (ctx.Node)
+                {
+                    case LiteralExpressionSyntax literal when literal.IsKind(SyntaxKind.StringLiteralExpression):
+                        ctx.ReportDiagnostic(Diagnostic.Create(Rule, literal.GetLocation()));
+                        break;
+                    case InterpolatedStringExpressionSyntax interpolatedString:
+                        ctx.ReportDiagnostic(Diagnostic.Create(Rule, interpolatedString.GetLocation()));
+                        break;
+                }
 
-                if (!literal.IsKind(SyntaxKind.StringLiteralExpression))
-                    return;
-
-                var diagnostic = Diagnostic.Create(Rule, literal.GetLocation());
-                ctx.ReportDiagnostic(diagnostic);
-
-            }, SyntaxKind.StringLiteralExpression);
+            }, SyntaxKind.StringLiteralExpression, SyntaxKind.InterpolatedStringExpression);
         }
     }
 }

@@ -11,6 +11,7 @@ artifacts
 pre_commit.log
 pre_commit.ps1
 docs/PUSH_RELEASE.md
+docs/PUSH_RELEASE.ru.md
 
 # User-specific files
 *.suo
@@ -28,6 +29,13 @@ x64/
 
 # NuGet Packages
 *.nupkg
+*.vsix
+!src/Lizerium.Localization.Xaml.Vsix/
+!src/Lizerium.Localization.Xaml.Vsix/**
+src/Lizerium.Localization.Xaml.Vsix/bin/
+src/Lizerium.Localization.Xaml.Vsix/obj/
+src/Lizerium.Localization.Xaml.Vsix/**/*.vsix
+src/Lizerium.Localization.Xaml.Vsix/extension.vsixmanifest
 # The packages folder can be ignored because of Package Restore
 **/packages/*
 # except build/, which is used as an MSBuild target.

@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 02 мая 2026 19:17:07
- * Version: 1.0.5
+ * Last Updated: 03 мая 2026 06:52:43
+ * Version: 1.0.6
  */
 
 using System;
@@ -15,10 +15,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
+using Lizerium.AI.LocalizationAssistant.Core.Components.Ollama;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CodeRefactorings;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
@@ -34,162 +35,194 @@ namespace Lizerium.Localization.Ai.Analyzer
         public override FixAllProvider GetFixAllProvider() =>
             WellKnownFixAllProviders.BatchFixer;
 
-        //public override Task RegisterCodeFixesAsync(CodeFixContext context)
-        //{
-        //    var title = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ru"
-        //        ? "Создать ключ локализации (AI)"
-        //        : "Generate localization key (AI)";
-
-        //    context.RegisterCodeFix(
-        //        CodeAction.Create(
-        //            title,
-        //            ct => Task.FromResult(context.Document.Project.Solution),
-        //            equivalenceKey: "AI_Localization"),
-        //        context.Diagnostics);
-
-        //    return Task.CompletedTask;
-        //}
-
-        public override Task RegisterCodeFixesAsync(CodeFixContext context)
+        public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
+            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
+            if (root == null)
+                return;
+
             foreach (var diagnostic in context.Diagnostics)
             {
-                if (diagnostic.Id != StringLiteralAnalyzer.DiagnosticId)
+                var span = diagnostic.Location.SourceSpan;
+                var node = root.FindNode(span);
+
+                var localizableNode = GetLocalizableNode(node);
+                if (localizableNode is null)
                     continue;
 
                 context.RegisterCodeFix(
                     CodeAction.Create(
-                        "AI TEST COMMAND",
-                        async ct =>
-                        {
-                            var doc = context.Document;
-                            var root = await doc.GetSyntaxRootAsync(ct);
-
-                            SyntaxNode newRoot = default;
-
-                            if(root != null)
-                                newRoot = root.WithTrailingTrivia(
-                                    root.GetTrailingTrivia().Add(SyntaxFactory.Whitespace(" ")));
-
-                            return doc.WithSyntaxRoot(newRoot).Project.Solution;
-                        },
-                        equivalenceKey: "AI_TEST"),
+                        GetLocalizedTitle(),
+                        token => CreateKeyWithAiAsync(context.Document, span, token),
+                        equivalenceKey: "AI_Localization"),
                     diagnostic);
             }
-
-            return Task.CompletedTask;
         }
 
-        private static string GetLocalizedTitle()
+        private async Task<Solution> CreateKeyWithAiAsync(
+            Document document,
+            TextSpan span,
+            CancellationToken token)
         {
-            var culture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-
-            switch(culture)
+            try
             {
-                case "ru":
-                    return  "Создать ключ локализации (AI)";
-                    break;
-                default:
-                    return  "Generate localization key (AI)";
-                    break;
-            };
-        }
+                var project = document.Project;
+                var solution = project.Solution;
 
-        private async Task<Solution> CreateKeyWithAiAsync(Document document, TextSpan span, CancellationToken token)
-        {
-            var project = document.Project;
-            var solution = project.Solution;
+                var root = await document.GetSyntaxRootAsync(token);
+                if (root is null)
+                    return solution;
 
-            var text = await GetStringLiteralAsync(document, span, token);
-            if (string.IsNullOrWhiteSpace(text))
+                var node = root.FindNode(span, getInnermostNodeForTie: true);
+                var localizableNode = GetLocalizableNode(node);
+                if (localizableNode is null)
+                    return solution;
+
+                var localizableText = GetLocalizableText(localizableNode);
+                if (localizableText is null || string.IsNullOrWhiteSpace(localizableText.Value))
+                    return solution;
+
+                var sourceText = localizableText.Value;
+
+                var method = node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
+                var classDecl = node.FirstAncestorOrSelf<ClassDeclarationSyntax>();
+
+                var className = SanitizeIdentifier(classDecl?.Identifier.ValueText ?? "Global");
+                var methodName = SanitizeIdentifier(method?.Identifier.ValueText ?? "Method");
+
+                var replacementArguments = localizableText.Arguments;
+                var argumentCount = Math.Max(GetPlaceholderCount(sourceText), replacementArguments.Length);
+
+                var resxDocuments = project.AdditionalDocuments
+                    .Where(d => d.FilePath?.EndsWith(".resx", StringComparison.OrdinalIgnoreCase) == true)
+                    .ToArray();
+
+                var en = FindDocument(resxDocuments, ".en.resx");
+                var ru = FindDocument(resxDocuments, ".ru.resx");
+
+                var nextIndex = await GetNextIndexAsync(en ?? ru, className, methodName, token);
+
+                var key = $"{className}_{methodName}_Text{nextIndex}";
+                if (argumentCount > 0)
+                    key += "_Format";
+
+                var result = await GetSafeLocalizationResultAsync(sourceText);
+
+                if (en is not null)
+                    solution = await AddOrUpdateAsync(solution, en, key, result.En, token);
+
+                if (ru is not null)
+                    solution = await AddOrUpdateAsync(solution, ru, key, result.Ru, token);
+
+                solution = await ReplaceStringWithInvocationAsync(
+                    document,
+                    localizableNode.Span,
+                    key,
+                    replacementArguments,
+                    solution,
+                    token);
+
                 return solution;
-
-            // get context
-            var semanticModel = await document.GetSemanticModelAsync(token);
-            var root = await document.GetSyntaxRootAsync(token);
-            var node = root?.FindNode(span);
-
-            var method = node?.FirstAncestorOrSelf<MethodDeclarationSyntax>();
-            var classDecl = node?.FirstAncestorOrSelf<ClassDeclarationSyntax>();
-
-            var className = classDecl?.Identifier.Text ?? "Global";
-            var methodName = method?.Identifier.Text ?? "Method";
-            return solution;
+            }
+            catch
+            {
+                return document.Project.Solution;
+            }
         }
 
-        //private static async Task<Solution> CreateKeyWithAiAsync(
-        // Document document,
-        // TextSpan span,
-        // string fallbackKey,
-        // int argumentCount,
-        // CancellationToken token)
-        //{
-        //    //// get AI Core
-        //    //var ai = CreateAiService();
+        private static async Task<int> GetNextIndexAsync(
+            TextDocument? document,
+            string className,
+            string methodName,
+            CancellationToken token)
+        {
+            if (document is null)
+                return 1;
 
-        //    //var aiResult = await ai.ProcessAsync(
-        //    //    sourceText: text!,
-        //    //    className: className,
-        //    //    methodName: methodName,
-        //    //    usageType: "Error" 
-        //    //);
+            var text = await document.GetTextAsync(token);
+            var xml = text.ToString();
 
-        //    //if (aiResult is null)
-        //    //    return solution;
+            if (string.IsNullOrWhiteSpace(xml))
+                return 1;
 
-        //    //var resourceKey = argumentCount > 0 && aiResult.Key.EndsWith("_Format", StringComparison.OrdinalIgnoreCase) is false
-        //    //    ? aiResult.Key + "_Format"
-        //    //    : aiResult.Key;
+            var xdoc = XDocument.Parse(xml, LoadOptions.PreserveWhitespace);
 
-        //    //var resxDocuments = project.AdditionalDocuments
-        //    //    .Where(d => d.FilePath?.EndsWith(".resx", StringComparison.OrdinalIgnoreCase) == true)
-        //    //    .ToArray();
+            var prefix = $"{className}_{methodName}_Text";
 
-        //    //var en = FindDocument(resxDocuments, ".en.resx");
-        //    //var ru = FindDocument(resxDocuments, ".ru.resx");
+            var max = xdoc.Root?
+                .Elements("data")
+                .Select(x => x.Attribute("name")?.Value)
+                .Where(x => x != null && x.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                .Select(x => ExtractIndex(x!, className, methodName))
+                .DefaultIfEmpty(0)
+                .Max() ?? 0;
 
-        //    //if (en is not null)
-        //    //    solution = await AddOrUpdateWithValueAsync(solution, en, resourceKey, aiResult.En, token);
+            return max + 1;
+        }
 
-        //    //if (ru is not null)
-        //    //    solution = await AddOrUpdateWithValueAsync(solution, ru, resourceKey, aiResult.Ru, token);
+        private static int ExtractIndex(string key, string className, string methodName)
+        {
+            var value = key;
 
-        //    //// 👉 опционально: заменить строку на L.Class.Key()
-        //    //solution = await ReplaceStringWithInvocationAsync(document, span, className, resourceKey, solution, token);
+            if (value.EndsWith("_Format", StringComparison.OrdinalIgnoreCase))
+                value = value.Substring(0, value.Length - "_Format".Length);
 
-        //    return solution;
-        //}
+            var prefix = $"{className}_{methodName}_Text";
 
-        private static async Task<Solution> AddOrUpdateWithValueAsync(
+            if (!value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                return 0;
+
+            var numberText = value.Substring(prefix.Length);
+
+            return int.TryParse(numberText, out var number)
+                ? number
+                : 0;
+        }
+
+        private static int GetPlaceholderCount(string text)
+        {
+            var matches = System.Text.RegularExpressions.Regex.Matches(text, @"(?<!\{)\{(\d+)(?:[^}]*)\}(?!\})");
+
+            if (matches.Count == 0)
+                return 0;
+
+            return matches
+                .Cast<System.Text.RegularExpressions.Match>()
+                .Select(m => int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture))
+                .DefaultIfEmpty(-1)
+                .Max() + 1;
+        }
+
+        private static async Task<Solution> AddOrUpdateAsync(
             Solution solution,
             TextDocument document,
             string key,
             string value,
             CancellationToken token)
         {
-            var text = await document.GetTextAsync(token);
-            var newXml = AddOrUpdateValue(text.ToString(), key, value);
+            var text = await document.GetTextAsync(token).ConfigureAwait(false);
+            var newText = AddOrUpdate(text.ToString(), key, value);
 
             return solution.WithAdditionalDocumentText(
                 document.Id,
-                SourceText.From(newXml, text.Encoding ?? System.Text.Encoding.UTF8));
+                SourceText.From(newText, text.Encoding ?? System.Text.Encoding.UTF8));
         }
 
-        private static string AddOrUpdateValue(string xml, string key, string value)
+        private static string AddOrUpdate(string xml, string key, string value)
         {
-            var doc = string.IsNullOrWhiteSpace(xml)
+            var document = string.IsNullOrWhiteSpace(xml)
                 ? CreateDocument()
                 : XDocument.Parse(xml, LoadOptions.PreserveWhitespace);
 
-            var root = doc.Root;
-
-            if(root == null)
-                return doc.ToString();
+            var root = document.Root ?? throw new InvalidOperationException("Invalid RESX file.");
 
             var existing = root.Elements("data")
-                .FirstOrDefault(x => string.Equals(x.Attribute("name")?.Value, key, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(item => string.Equals(
+                    item.Attribute("name")?.Value,
+                    key,
+                    StringComparison.OrdinalIgnoreCase));
 
-            if (existing == null)
+            if (existing is null)
             {
                 root.Add(new XElement("data",
                     new XAttribute("name", key),
@@ -198,45 +231,23 @@ namespace Lizerium.Localization.Ai.Analyzer
             }
             else
             {
-                existing.Element("value").Value = value;
+                var valueElement = existing.Element("value");
+
+                if (valueElement is null)
+                    existing.Add(new XElement("value", value));
+                else
+                    valueElement.Value = value;
             }
 
-            return doc.ToString();
+            return document.ToString();
         }
 
-        private static async Task<Solution> ReplaceStringWithInvocationAsync(
-            Document document,
-            TextSpan span,
-            string className,
-            string key,
-            Solution solution,
-            CancellationToken token)
+
+        private static TextDocument? FindDocument(TextDocument[] documents, string suffix)
         {
-            var root = await document.GetSyntaxRootAsync(token);
-            if(root == null) return null;
-
-            var literal = root?.FindNode(span).FirstAncestorOrSelf<LiteralExpressionSyntax>();
-            if (literal == null)
-                return solution;
-
-            var invocation = SyntaxFactory.ParseExpression($"L.{className}.{key}()");
-
-            var newRoot = root.ReplaceNode(literal, invocation);
-            var newDoc = document.WithSyntaxRoot(newRoot);
-
-            return newDoc.Project.Solution;
-        }
-
-        private static async Task<string> GetStringLiteralAsync(Document document, TextSpan span, CancellationToken token)
-        {
-            var root = await document.GetSyntaxRootAsync(token).ConfigureAwait(false);
-            var node = root?.FindNode(span, getInnermostNodeForTie: true);
-
-            var literal = node?.FirstAncestorOrSelf<LiteralExpressionSyntax>();
-            if (literal == null)
-                return null;
-
-            return literal.Token.ValueText; // ← без кавычек
+            // Prefer culture-specific files, but support a neutral Strings.resx in simpler projects.
+            return documents.FirstOrDefault(document => document.FilePath?.EndsWith(suffix, StringComparison.OrdinalIgnoreCase) == true)
+                ?? documents.FirstOrDefault(document => string.Equals(Path.GetFileName(document.FilePath), "Strings.resx", StringComparison.OrdinalIgnoreCase));
         }
 
         private static XDocument CreateDocument()
@@ -248,6 +259,209 @@ namespace Lizerium.Localization.Ai.Analyzer
                     new XElement("resheader", new XAttribute("name", "version"), new XElement("value", "2.0")),
                     new XElement("resheader", new XAttribute("name", "reader"), new XElement("value", "System.Resources.ResXResourceReader, System.Windows.Forms")),
                     new XElement("resheader", new XAttribute("name", "writer"), new XElement("value", "System.Resources.ResXResourceWriter, System.Windows.Forms"))));
+        }
+
+        private static string GetLocalizedTitle()
+        {
+            return "Generate localization key (AI)";
+        }
+
+        private static async Task<Solution> ReplaceStringWithInvocationAsync(
+            Document document,
+            TextSpan span,
+            string key,
+            ImmutableArray<string> arguments,
+            Solution solution,
+            CancellationToken token)
+        {
+            var currentDocument = solution.GetDocument(document.Id) ?? document;
+            var root = await currentDocument.GetSyntaxRootAsync(token);
+            if (root is null)
+                return solution;
+
+            var localizableNode = GetLocalizableNode(root.FindNode(span, getInnermostNodeForTie: true));
+            if (localizableNode is null)
+                return solution;
+
+            var invocationText = CreateInvocationText(key, arguments);
+            if (string.IsNullOrWhiteSpace(invocationText))
+                return solution;
+
+            var invocation = SyntaxFactory.ParseExpression(invocationText)
+                .WithTriviaFrom(localizableNode);
+
+            var newRoot = root.ReplaceNode(localizableNode, invocation);
+
+            return solution.WithDocumentSyntaxRoot(document.Id, newRoot);
+        }
+
+        private static async Task<LocalizationResult> GetSafeLocalizationResultAsync(string sourceText)
+        {
+            LocalizationResult? result = null;
+
+            try
+            {
+                result = await AiRunner.RunAsync(sourceText).ConfigureAwait(false);
+            }
+            catch
+            {
+                // The code fix must keep the project compilable even when the local AI service is unavailable.
+            }
+
+            result ??= new LocalizationResult();
+
+            if (string.IsNullOrWhiteSpace(result.En))
+                result.En = sourceText;
+
+            if (string.IsNullOrWhiteSpace(result.Ru))
+                result.Ru = sourceText;
+
+            return result;
+        }
+
+        private static ImmutableArray<string> GetReplacementArguments(SyntaxNode node, string sourceText)
+        {
+            var placeholderCount = GetPlaceholderCount(sourceText);
+            if (placeholderCount <= 0)
+                return ImmutableArray<string>.Empty;
+
+            var literal = node.FirstAncestorOrSelf<LiteralExpressionSyntax>();
+            var argument = literal?.FirstAncestorOrSelf<ArgumentSyntax>();
+            var invocation = argument?.FirstAncestorOrSelf<InvocationExpressionSyntax>();
+
+            if (argument is not null &&
+                invocation is not null &&
+                IsStringFormatInvocation(invocation) &&
+                invocation.ArgumentList.Arguments.FirstOrDefault() == argument)
+            {
+                var formatArguments = invocation.ArgumentList.Arguments
+                    .Skip(1)
+                    .Select(item => item.Expression.ToString())
+                    .ToImmutableArray();
+
+                if (formatArguments.Length >= placeholderCount)
+                    return formatArguments;
+            }
+
+            return Enumerable.Range(0, placeholderCount)
+                .Select(index => SyntaxFactory.LiteralExpression(
+                    SyntaxKind.StringLiteralExpression,
+                    SyntaxFactory.Literal("{" + index.ToString(CultureInfo.InvariantCulture) + "}")).ToString())
+                .ToImmutableArray();
+        }
+
+        private static SyntaxNode? GetLocalizableNode(SyntaxNode node)
+        {
+            var interpolatedString = node.FirstAncestorOrSelf<InterpolatedStringExpressionSyntax>();
+            if (interpolatedString is not null)
+                return interpolatedString;
+
+            var literal = node.FirstAncestorOrSelf<LiteralExpressionSyntax>();
+            return literal?.IsKind(SyntaxKind.StringLiteralExpression) == true
+                ? literal
+                : null;
+        }
+
+        private static LocalizableText? GetLocalizableText(SyntaxNode node)
+        {
+            if (node is LiteralExpressionSyntax literal)
+                return new LocalizableText(literal.Token.ValueText, GetReplacementArguments(node, literal.Token.ValueText));
+
+            if (node is not InterpolatedStringExpressionSyntax interpolatedString)
+                return null;
+
+            var builder = new System.Text.StringBuilder();
+            var arguments = ImmutableArray.CreateBuilder<string>();
+
+            foreach (var content in interpolatedString.Contents)
+            {
+                if (content is InterpolatedStringTextSyntax text)
+                {
+                    builder.Append(text.TextToken.ValueText);
+                    continue;
+                }
+
+                if (content is not InterpolationSyntax interpolation)
+                    continue;
+
+                var index = arguments.Count;
+                arguments.Add(interpolation.Expression.ToString());
+                builder.Append('{').Append(index.ToString(CultureInfo.InvariantCulture));
+
+                if (interpolation.AlignmentClause is not null)
+                    builder.Append(interpolation.AlignmentClause.ToString());
+
+                if (interpolation.FormatClause is not null)
+                    builder.Append(interpolation.FormatClause.ToString());
+
+                builder.Append('}');
+            }
+
+            return new LocalizableText(builder.ToString(), arguments.ToImmutable());
+        }
+
+        private static bool IsStringFormatInvocation(InvocationExpressionSyntax invocation)
+        {
+            return invocation.Expression switch
+            {
+                MemberAccessExpressionSyntax memberAccess
+                    when memberAccess.Name.Identifier.ValueText == "Format" &&
+                         memberAccess.Expression.ToString() is "string" or "String" or "System.String" => true,
+                IdentifierNameSyntax identifier
+                    when identifier.Identifier.ValueText == "Format" => true,
+                _ => false
+            };
+        }
+
+        private static string CreateInvocationText(string key, ImmutableArray<string> arguments)
+        {
+            var apiKey = key.EndsWith("_Format", StringComparison.OrdinalIgnoreCase)
+                ? key.Substring(0, key.Length - "_Format".Length)
+                : key;
+
+            var parts = apiKey
+                .Split(new[] { '_' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(SanitizeIdentifier)
+                .ToArray();
+
+            if (parts.Length == 0)
+                return string.Empty;
+
+            var methodName = parts[parts.Length - 1];
+            var path = parts.Length == 1
+                ? string.Empty
+                : "." + string.Join(".", parts.Take(parts.Length - 1));
+            var args = string.Join(", ", arguments);
+
+            return $"L{path}.{methodName}({args})";
+        }
+
+        private static string SanitizeIdentifier(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return "Key";
+
+            var builder = new System.Text.StringBuilder();
+            foreach (var ch in value)
+                builder.Append(char.IsLetterOrDigit(ch) ? ch : '_');
+
+            if (builder.Length == 0 || char.IsDigit(builder[0]))
+                builder.Insert(0, '_');
+
+            return builder.ToString();
+        }
+
+        private sealed class LocalizableText
+        {
+            public LocalizableText(string value, ImmutableArray<string> arguments)
+            {
+                Value = value;
+                Arguments = arguments;
+            }
+
+            public string Value { get; }
+
+            public ImmutableArray<string> Arguments { get; }
         }
     }
 }

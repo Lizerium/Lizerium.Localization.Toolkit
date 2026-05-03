@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Как автогенерировать переводы в .NET RESX файлах</title>
+  <meta name="description" content="Как автоматически создавать RESX ключи и переводы из C# строк и WPF XAML через Lizerium.Localization.Toolkit, Ollama и Visual Studio CodeFix.">
+  <link rel="canonical" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/landing/kak-avtogenerirovat-perevody.html">
+  <link rel="alternate" hreflang="en" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/auto-generate-translations.html">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <script defer src="../../assets/language.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "Как автогенерировать переводы в .NET RESX",
+    "description": "Автоматическое создание RESX ключей и переводов из C# и WPF XAML.",
+    "step": [
+      {"@type": "HowToStep", "name": "Установить пакет", "text": "Добавьте Lizerium.Localization.Toolkit в проект."},
+      {"@type": "HowToStep", "name": "Добавить RESX", "text": "Создайте Strings.en.resx и Strings.ru.resx."},
+      {"@type": "HowToStep", "name": "Запустить CodeFix", "text": "Используйте лампочку Visual Studio на C# строках или XAML текстах."}
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="topbar"><div class="shell nav"><a class="brand" href="../"><img src="https://raw.githubusercontent.com/Lizerium/Lizerium.Localization.Toolkit/main/media/LOGO_400x400.png" alt="">Lizerium</a><nav class="links"><a href="../">Главная</a><select class="language-select" aria-label="Язык" data-language-select><option data-url="../../landing/auto-generate-translations.html">English</option><option selected data-url="./kak-avtogenerirovat-perevody.html">Русский</option></select><a href="https://github.com/Lizerium/Lizerium.Localization.Toolkit">GitHub</a></nav></div></header>
+  <main class="section"><div class="shell article">
+    <div class="breadcrumbs"><a href="../">Главная</a> / Автогенерация переводов</div>
+    <h1>Как автогенерировать переводы для .NET RESX локализации</h1>
+    <p class="lead">Lizerium.Localization.Toolkit создает ключи, переводы и вызовы сгенерированного API прямо из Visual Studio.</p>
+    <div class="steps">
+      <div class="step"><strong>1. Установите NuGet</strong><pre><code>&lt;PackageReference Include="Lizerium.Localization.Toolkit" Version="1.0.0" /&gt;</code></pre></div>
+      <div class="step"><strong>2. Добавьте ресурсы</strong><pre><code>Resources/Localization/Strings.en.resx
+Resources/Localization/Strings.ru.resx</code></pre></div>
+      <div class="step"><strong>3. Используйте AI CodeFix для C#</strong><pre><code>var text = "Hello World";
+var details = $"Log directory: {AppContext.BaseDirectory} | {5}";</code></pre></div>
+      <div class="step"><strong>4. Используйте VSIX для XAML</strong><pre><code>&lt;Button Content="English" /&gt;</code></pre></div>
+    </div>
+    <div class="callout"><p>Для XAML настройки доступны в Visual Studio Options. Для NuGet analyzer используйте переменные окружения.</p></div>
+  </div></main>
+</body>
+</html>
