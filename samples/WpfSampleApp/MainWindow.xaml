@@ -2,7 +2,6 @@
     x:Class="WpfSampleApp.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:loc="https://schemas.lizerium.dev/localization"
     Title="Localization Sample"
     Width="520"
     Height="260">
@@ -30,12 +29,12 @@
                     Height="32"
                     Margin="0,0,8,0"
                     Click="English_Click"
-                    Content="{loc:Loc MainWindow_Button_Content_English}" />
+                    Content="English" />
                 <Button
                     Width="92"
                     Height="32"
                     Click="Russian_Click"
-                    Content="34234" />
+                    Content="Русский" />
             </StackPanel>
         </StackPanel>
     </Grid>

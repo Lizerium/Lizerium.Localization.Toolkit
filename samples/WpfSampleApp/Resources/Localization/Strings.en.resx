@@ -147,7 +147,13 @@
   <data name="MainWindow_Render_Text6_Format" xml:space="preserve">
     <value>Hello {0}</value>
   </data>
-  <data name="MainWindow_CustomText_Text_Какойтотекствблоке" xml:space="preserve">
-    <value>Some text block</value>
+  <data name="MainWindow_Button_Content_English" xml:space="preserve">
+    <value>English</value>
   </data>
-<data name="MainWindow_Button_Content_English" xml:space="preserve"><value>English</value></data></root>
+  <data name="MainWindow_Render_Text7" xml:space="preserve">
+    <value>I love Kariana</value>
+  </data>
+  <data name="MainWindow_Render_Text8_Format" xml:space="preserve">
+    <value>I love Karianna very much: {0}</value>
+  </data>
+</root>

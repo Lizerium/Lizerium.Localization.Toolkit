@@ -147,7 +147,13 @@
   <data name="MainWindow_Render_Text6_Format" xml:space="preserve">
     <value>Привет {0}</value>
   </data>
-  <data name="MainWindow_CustomText_Text_Какойтотекствблоке" xml:space="preserve">
-    <value>Какой то текст в блоке</value>
+  <data name="MainWindow_Button_Content_English" xml:space="preserve">
+    <value>Английский</value>
   </data>
-<data name="MainWindow_Button_Content_English" xml:space="preserve"><value>Английский</value></data></root>
+  <data name="MainWindow_Render_Text7" xml:space="preserve">
+    <value>Я люблю Карину</value>
+  </data>
+  <data name="MainWindow_Render_Text8_Format" xml:space="preserve">
+    <value>Я люблю карину очень сильно: {0}</value>
+  </data>
+</root>

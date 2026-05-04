@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 03 мая 2026 06:52:43
- * Version: 1.0.6
+ * Last Updated: 04 мая 2026 06:52:49
+ * Version: 1.0.7
  */
 
 using System.IO;
@@ -54,5 +54,8 @@ public partial class MainWindow : Window
         var test3 = L.MainWindow.Render.Text4(AppContext.BaseDirectory);
         var test4 = L.MainWindow.Render.Text5();
         var test5Params = L.MainWindow.Render.Text6(AppContext.BaseDirectory);
+        var test6 = L.MainWindow.Render.Text7();
+        var test7Param = L.MainWindow.Render.Text8(AppContext.BaseDirectory);
+        MessageText.Text = test7Param;
     }
 }
