@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -28,78 +29,82 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Resolve package version
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Resolve release version
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}"
+          if ($version -eq "main" -or $version -eq "master") {
+            $version = "0.0.0-ci"
+          }
           if ($version.StartsWith("v")) {
             $version = $version.Substring(1)
           }
 
           "PACKAGE_VERSION=$version" >> $env:GITHUB_ENV
+          "RELEASE_TAG=${{ github.ref_name }}" >> $env:GITHUB_ENV
 
-      - name: Restore
+      - name: Restore solution
         run: dotnet restore Lizerium.Localization.Toolkit.sln
 
-      - name: Build Core
-        run: dotnet build src/Lizerium.Localization.Core/Lizerium.Localization.Core.csproj -c ${{ env.CONFIGURATION }} --no-restore
+      - name: Build solution
+        run: dotnet build Lizerium.Localization.Toolkit.sln -c ${{ env.CONFIGURATION }} --no-restore
 
-      - name: Build Generator
-        run: dotnet build src/Lizerium.Localization.Generator/Lizerium.Localization.Generator.csproj -c ${{ env.CONFIGURATION }} --no-restore
-
-      - name: Build Analyzer
-        run: dotnet build src/Lizerium.Localization.Analyzer/Lizerium.Localization.Analyzer.csproj -c ${{ env.CONFIGURATION }} --no-restore
-
-      - name: Build GUI
-        run: dotnet build src/Lizerium.Localization.GUI/Lizerium.Localization.GUI.csproj -c ${{ env.CONFIGURATION }} --no-restore
-
-      - name: Build Sample
-        run: dotnet build samples/WpfSampleApp/WpfSampleApp.csproj -c ${{ env.CONFIGURATION }} --no-restore
-
-      - name: Restore publish projects
-        run: |
-          dotnet restore src/Lizerium.Localization.GUI/Lizerium.Localization.GUI.csproj -r ${{ env.RID }}
-          dotnet restore samples/WpfSampleApp/WpfSampleApp.csproj -r ${{ env.RID }}
+      - name: Test AI localization
+        run: >
+          dotnet test src/Lizerium.AI.LocalizationAssistant.Tests/Lizerium.AI.LocalizationAssistant.Tests.csproj
+          -c ${{ env.CONFIGURATION }}
+          --no-restore
+          --no-build
 
       - name: Pack NuGet packages
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force artifacts/nuget | Out-Null
 
-          dotnet pack src/Lizerium.Localization.Core/Lizerium.Localization.Core.csproj `
-            -c $env:CONFIGURATION `
-            -p:Version=$env:PACKAGE_VERSION `
-            -p:PackageVersion=$env:PACKAGE_VERSION `
-            -o artifacts/nuget `
-            --no-restore
+          $projects = @(
+            "src/Lizerium.Localization.Core/Lizerium.Localization.Core.csproj",
+            "src/Lizerium.AI.LocalizationAssistant.Core/Lizerium.AI.LocalizationAssistant.Core.csproj",
+            "src/Lizerium.Localization.Generator/Lizerium.Localization.Generator.csproj",
+            "src/Lizerium.Localization.Analyzer/Lizerium.Localization.Analyzer.csproj",
+            "src/Lizerium.Localization.Ai.Analyzer/Lizerium.Localization.Ai.Analyzer.csproj",
+            "src/Lizerium.Localization.Toolkit/Lizerium.Localization.Toolkit.csproj",
+            "src/Lizerium.Localization.GUI/Lizerium.Localization.GUI.csproj"
+          )
 
-          dotnet pack src/Lizerium.Localization.Generator/Lizerium.Localization.Generator.csproj `
-            -c $env:CONFIGURATION `
-            -p:Version=$env:PACKAGE_VERSION `
-            -p:PackageVersion=$env:PACKAGE_VERSION `
-            -o artifacts/nuget `
-            --no-restore
+          foreach ($project in $projects) {
+            dotnet pack $project `
+              -c $env:CONFIGURATION `
+              -p:Version=$env:PACKAGE_VERSION `
+              -p:PackageVersion=$env:PACKAGE_VERSION `
+              -o artifacts/nuget `
+              --no-restore `
+              --no-build
+          }
 
-          dotnet pack src/Lizerium.Localization.Analyzer/Lizerium.Localization.Analyzer.csproj `
-            -c $env:CONFIGURATION `
-            -p:Version=$env:PACKAGE_VERSION `
-            -p:PackageVersion=$env:PACKAGE_VERSION `
-            -o artifacts/nuget `
-            --no-restore
+      - name: Build VSIX
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/vsix | Out-Null
 
-          dotnet pack src/Lizerium.Localization.Toolkit/Lizerium.Localization.Toolkit.csproj `
-            -c $env:CONFIGURATION `
-            -p:Version=$env:PACKAGE_VERSION `
-            -p:PackageVersion=$env:PACKAGE_VERSION `
-            -o artifacts/nuget `
-            --no-restore
+          msbuild src/Lizerium.Localization.Xaml.Vsix/Lizerium.Localization.Xaml.Vsix.csproj `
+            /t:Build `
+            /p:Configuration=$env:CONFIGURATION `
+            /p:RestorePackages=false `
+            /p:Version=$env:PACKAGE_VERSION `
+            /v:minimal
 
-          dotnet pack src/Lizerium.Localization.GUI/Lizerium.Localization.GUI.csproj `
-            -c $env:CONFIGURATION `
-            -p:Version=$env:PACKAGE_VERSION `
-            -p:PackageVersion=$env:PACKAGE_VERSION `
-            -o artifacts/nuget `
-            --no-restore
+          Copy-Item `
+            src/Lizerium.Localization.Xaml.Vsix/bin/$env:CONFIGURATION/net472/Lizerium.Localization.Xaml.Vsix.vsix `
+            artifacts/vsix/Lizerium.Localization.Xaml.Vsix-$env:RELEASE_TAG.vsix `
+            -Force
+
+      - name: Restore publish projects
+        run: |
+          dotnet restore src/Lizerium.Localization.GUI/Lizerium.Localization.GUI.csproj -r ${{ env.RID }}
+          dotnet restore samples/WpfSampleApp/WpfSampleApp.csproj -r ${{ env.RID }}
 
       - name: Publish GUI
         run: >
@@ -130,7 +135,7 @@ jobs:
       - name: Pack release assets
         shell: pwsh
         run: |
-          $tag = "${{ github.ref_name }}"
+          $tag = $env:RELEASE_TAG
           $prefix = "${{ env.ARTIFACT_PREFIX }}"
           New-Item -ItemType Directory -Force artifacts/release | Out-Null
 
@@ -154,83 +159,81 @@ jobs:
             -DestinationPath "artifacts/release/$prefix-SampleSource-$tag.zip" `
             -Force
 
+          Copy-Item artifacts/vsix/*.vsix artifacts/release/ -Force
+
           Get-ChildItem artifacts/release -File |
             Get-FileHash -Algorithm SHA256 |
             ForEach-Object { "$($_.Hash)  $(Split-Path $_.Path -Leaf)" } |
             Set-Content "artifacts/release/SHA256SUMS.txt" -Encoding UTF8
 
-          $releaseNotes = @'
-          ## Lizerium.Localization.Toolkit __TAG__
+          $releaseNotes = @"
+          ## Lizerium.Localization.Toolkit $tag
 
-          A localization workflow for .NET/WPF projects based on `.resx` files.
+          A release for the `.resx` localization workflow: runtime, source generator, analyzers, AI translation helpers, GUI editor, sample app, and Visual Studio XAML VSIX.
 
-          Рабочий набор локализации для .NET/WPF проектов на основе `.resx` файлов.
+          ### Included
 
-          ---
-
-          ### Included in this release
-
-          - NuGet packages for Toolkit, Core, Generator, Analyzer, and GUI
+          - NuGet packages: Toolkit, Core, AI Core, Generator, Analyzer, AI Analyzer, GUI
+          - Visual Studio 2022 VSIX: `Lizerium.Localization.Xaml.Vsix-$tag.vsix`
           - Windows x64 standalone GUI editor
           - Windows x64 published WPF sample application
           - Sample project source archive
           - SHA-256 checksums
 
-          ### Что входит в релиз
+          ### VSIX
 
-          - NuGet-пакеты для Toolkit, Core, Generator, Analyzer и GUI
-          - Самостоятельная Windows x64 сборка GUI-редактора
-          - Опубликованная Windows x64 сборка WPF sample-приложения
-          - Архив исходников sample-проекта
-          - SHA-256 checksums
+          The VSIX is a standalone Visual Studio editor extension. It is not a runtime dependency of target applications.
 
-          ---
+          It converts WPF XAML literals into localization markup, writes `Resources/Localization/Strings.en.resx` and `Strings.ru.resx`, and generates translations through Ollama with LibreTranslate fallback.
 
-          ### Install package
+          Runtime behavior:
+
+          - If the target project already has `LocExtension`, the VSIX reuses it.
+          - If the target project has no `LocExtension`, the VSIX adds a small source-only runtime under `LizeriumGenerated/Localization`.
+          - Generated keys are ASCII and stable; translated text is written only into RESX values.
+
+          ### NuGet Compatibility
+
+          The VSIX does not conflict with `Lizerium.Localization.Toolkit`.
+
+          With the NuGet package installed, the project already has runtime localization support, generator, and analyzers. The VSIX only edits XAML and RESX files. It does not add a PackageReference and does not replace the NuGet runtime.
+
+          ### Install NuGet From The Release Archive
 
           ```powershell
+          Expand-Archive .\$prefix-NuGet-$tag.zip .\packages
           dotnet nuget add source .\packages -n LizeriumLocal
-          dotnet add path\to\YourProject.csproj package Lizerium.Localization.Toolkit --version __VERSION__ --source .\packages
+          dotnet add path\to\YourProject.csproj package Lizerium.Localization.Toolkit --version $env:PACKAGE_VERSION --source .\packages
           ```
 
-          ### Установка пакета
+          ### Install VSIX
 
-          ```powershell
-          dotnet nuget add source .\packages -n LizeriumLocal
-          dotnet add path\to\YourProject.csproj package Lizerium.Localization.Toolkit --version __VERSION__ --source .\packages
-          ```
+          Download `Lizerium.Localization.Xaml.Vsix-$tag.vsix`, close Visual Studio, install it, then reopen Visual Studio.
 
-          ---
-
-          ### GUI usage
+          ### GUI Usage
 
           Download the GUI archive, extract it, and run:
 
           ```powershell
           .\Lizerium.Localization.GUI.exe
           ```
+          "@
 
-          The editor can be registered in Visual Studio through `Tools -> External Tools...` with `$(ProjectDir)` as the argument.
-
-          ### Использование GUI
-
-          Скачай архив GUI, распакуй его и запусти:
-
-          ```powershell
-          .\Lizerium.Localization.GUI.exe
-          ```
-
-          Редактор можно добавить в Visual Studio через `Tools -> External Tools...`, передав `$(ProjectDir)` как аргумент.
-          '@
-
-          $releaseNotes = $releaseNotes.Replace("__TAG__", $tag).Replace("__VERSION__", $env:PACKAGE_VERSION)
           $releaseNotes | Set-Content "artifacts/release/RELEASE_NOTES.md" -Encoding UTF8
 
-      - name: Upload Release
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-assets-${{ github.ref_name }}
+          path: artifacts/release/*
+
+      - name: Upload GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           body_path: artifacts/release/RELEASE_NOTES.md
           files: |
             artifacts/release/*.zip
+            artifacts/release/*.vsix
             artifacts/release/SHA256SUMS.txt

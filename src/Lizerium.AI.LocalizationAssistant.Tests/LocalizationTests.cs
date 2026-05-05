@@ -9,6 +9,9 @@
 using Lizerium.AI.LocalizationAssistant.Core.Clients.Ollama;
 using Lizerium.AI.LocalizationAssistant.Core.Components.Ollama;
 using Lizerium.AI.LocalizationAssistant.Core.Services;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 
 using Xunit.Abstractions;
 
@@ -144,6 +147,50 @@ namespace Lizerium.AI.LocalizationAssistant.Tests
                 "test");
 
             Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_Should_Fallback_To_Libre_When_Ollama_Fails()
+        {
+            using var libre = new TcpListener(IPAddress.Loopback, 0);
+            libre.Start();
+
+            var port = ((IPEndPoint)libre.LocalEndpoint).Port;
+            var serverTask = ServeLibreResponseAsync(libre, "{\"translatedText\":\"Тест Libre\"}");
+
+            var service = new AILocalizationService(
+                new ThrowingAiClient(),
+                new PromtConfig
+                {
+                    LibreUrl = "http://127.0.0.1:" + port,
+                    RequestTimeoutSeconds = 5
+                });
+
+            var result = await service.ProcessAsync("Libre fallback proof");
+            await serverTask;
+
+            Assert.NotNull(result);
+            Assert.Equal("Libre fallback proof", result.En);
+            Assert.Equal("Тест Libre", result.Ru);
+            Assert.Contains(result.LocErrors, error => error.Text.Contains("Ollama unavailable"));
+        }
+
+        private static async Task ServeLibreResponseAsync(TcpListener listener, string json)
+        {
+            using var client = await listener.AcceptTcpClientAsync();
+            using var stream = client.GetStream();
+            var buffer = new byte[4096];
+            await stream.ReadAsync(buffer, 0, buffer.Length);
+
+            var body = Encoding.UTF8.GetBytes(json);
+            var header = Encoding.ASCII.GetBytes(
+                "HTTP/1.1 200 OK\r\n" +
+                "Content-Type: application/json; charset=utf-8\r\n" +
+                "Content-Length: " + body.Length + "\r\n" +
+                "Connection: close\r\n\r\n");
+
+            await stream.WriteAsync(header, 0, header.Length);
+            await stream.WriteAsync(body, 0, body.Length);
         }
 
         [Theory]

@@ -6,9 +6,8 @@
  * Version: 1.0.8
  */
 
-using System.Text.Json;
-
 using Lizerium.AI.LocalizationAssistant.Core.Components.Ollama;
+using Lizerium.AI.LocalizationAssistant.Core.Services;
 
 namespace Lizerium.AI.LocalizationAssistant.Core.Clients.Libre
 {
@@ -44,8 +43,9 @@ namespace Lizerium.AI.LocalizationAssistant.Core.Clients.Libre
 
             var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            var doc = JsonDocument.Parse(json);
-            return doc.RootElement.GetProperty("translatedText").GetString() ?? text;
+            return SimpleJson.TryGetString(json, "translatedText", out var translated)
+                ? translated
+                : text;
         }
     }
 }

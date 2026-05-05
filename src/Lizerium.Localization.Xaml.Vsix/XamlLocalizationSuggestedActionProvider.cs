@@ -51,6 +51,8 @@ internal sealed class XamlLocalizationSuggestedActionProvider : ISuggestedAction
 
 internal sealed class XamlLocalizationSuggestedActionsSource : ISuggestedActionsSource
 {
+    private const string XamlLocalizationMarkupPattern = @"^\{(?:hc:Localization|loc:Localization|loc:Loc)\s+(?<key>[^}]+)\}$";
+
     private static readonly Regex AttributeRegex = new(
         @"(?<name>[A-Za-z_][\w:.-]*)\s*=\s*""(?<value>[^""]*)""",
         RegexOptions.Compiled);
@@ -232,7 +234,7 @@ internal sealed class XamlLocalizationSuggestedActionsSource : ISuggestedActions
             if (point < valueStart || point > valueEnd)
                 continue;
 
-            var locMatch = Regex.Match(valueGroup.Value, @"^\{loc:Loc\s+(?<key>[^}]+)\}$");
+            var locMatch = Regex.Match(valueGroup.Value, XamlLocalizationMarkupPattern);
             if (!locMatch.Success)
                 return false;
 
@@ -349,10 +351,17 @@ internal sealed class XamlLocalizationSuggestedActionsSource : ISuggestedActions
 
     private static string EnsureKeyHasTextHint(string key, string text)
     {
-        var hint = new string(text.Where(char.IsLetterOrDigit).Take(24).ToArray());
+        var hint = new string(text.Where(IsAsciiLetterOrDigit).Take(24).ToArray());
         return string.IsNullOrWhiteSpace(hint)
             ? key
             : key + "_" + hint;
+    }
+
+    private static bool IsAsciiLetterOrDigit(char value)
+    {
+        return (value >= 'A' && value <= 'Z') ||
+            (value >= 'a' && value <= 'z') ||
+            (value >= '0' && value <= '9');
     }
 
     private static string InferValueFromKey(string key)
@@ -364,6 +373,8 @@ internal sealed class XamlLocalizationSuggestedActionsSource : ISuggestedActions
 
 internal sealed class XamlLocalizationSuggestedAction : ISuggestedAction
 {
+    private const string XamlLocalizationMarkupPrefix = "loc:Loc";
+
     private readonly ITextBuffer _textBuffer;
     private readonly XamlLocalizationCandidate _candidate;
 
@@ -397,8 +408,8 @@ internal sealed class XamlLocalizationSuggestedAction : ISuggestedAction
     public Task<object?> GetPreviewAsync(CancellationToken cancellationToken)
     {
         var preview = _candidate.IsTextNode
-            ? $"<{_candidate.ElementName} {_candidate.PropertyName}=\"{{loc:Loc {_candidate.Key}}}\">"
-            : $"{_candidate.PropertyName}=\"{{loc:Loc {_candidate.Key}}}\"";
+            ? $"<{_candidate.ElementName} {_candidate.PropertyName}=\"{{{XamlLocalizationMarkupPrefix} {_candidate.Key}}}\">"
+            : $"{_candidate.PropertyName}=\"{{{XamlLocalizationMarkupPrefix} {_candidate.Key}}}\"";
 
         return Task.FromResult<object?>(preview);
     }
@@ -413,10 +424,11 @@ internal sealed class XamlLocalizationSuggestedAction : ISuggestedAction
             cancellationToken.ThrowIfCancellationRequested();
 
             var snapshot = _textBuffer.CurrentSnapshot;
-            var replacement = "{loc:Loc " + _candidate.Key + "}";
+            var replacement = "{" + XamlLocalizationMarkupPrefix + " " + _candidate.Key + "}";
             using var edit = _textBuffer.CreateEdit();
 
-            EnsureLocNamespace(snapshot, edit);
+            EnsureLocNamespace(snapshot, edit, _candidate.XamlPath);
+            RemoveLocNamespaceIfUnused(snapshot, edit, _candidate, replacement);
 
             if (_candidate.IsTextNode && _candidate.StartTagInsertPosition.HasValue)
             {
@@ -444,39 +456,254 @@ internal sealed class XamlLocalizationSuggestedAction : ISuggestedAction
         return true;
     }
 
-    private static void EnsureLocNamespace(ITextSnapshot snapshot, ITextEdit edit)
+    private static void EnsureLocNamespace(ITextSnapshot snapshot, ITextEdit edit, string xamlPath)
     {
         var text = snapshot.GetText();
-        const string locNamespace = "https://schemas.lizerium.dev/localization";
-        const string legacyLocNamespace = "clr-namespace:Lizerium.Localization.Core;assembly=Lizerium.Localization.Core";
-        if (text.Contains(locNamespace))
-            return;
+        var locNamespace = ResolveProjectLocNamespace(xamlPath);
 
-        var legacyIndex = text.IndexOf(legacyLocNamespace, StringComparison.Ordinal);
-        if (legacyIndex >= 0)
+        var existingLoc = Regex.Match(
+            text,
+            @"xmlns:loc\s*=\s*""(?<value>[^""]*)""",
+            RegexOptions.Singleline);
+
+        if (existingLoc.Success)
         {
-            edit.Replace(new Span(legacyIndex, legacyLocNamespace.Length), locNamespace);
+            var valueGroup = existingLoc.Groups["value"];
+            if (!string.Equals(valueGroup.Value, locNamespace, StringComparison.Ordinal))
+                edit.Replace(new Span(valueGroup.Index, valueGroup.Length), locNamespace);
+
             return;
         }
 
         var rootMatch = Regex.Match(
             text,
-            @"<(?<name>Window|UserControl|Page|ResourceDictionary)\b(?<attrs>[^>]*?)>",
+            @"<(?:(?<prefix>[A-Za-z_][\w.-]*):)?(?<name>Window|UserControl|Page|ResourceDictionary)\b(?<attrs>[^>]*?)>",
             RegexOptions.Singleline);
 
         if (!rootMatch.Success)
             return;
 
         var openingTag = rootMatch.Value;
-        if (openingTag.IndexOf("xmlns:loc=", StringComparison.Ordinal) >= 0)
-            return;
-
         var indent = Environment.NewLine + "        ";
         var updatedTag = openingTag.Insert(
             openingTag.Length - 1,
             indent + "xmlns:loc=\"" + locNamespace + "\"");
 
         edit.Replace(new Span(rootMatch.Index, rootMatch.Length), updatedTag);
+    }
+
+    private static string ResolveProjectLocNamespace(string xamlPath)
+    {
+        var projectDirectory = FindProjectDirectory(xamlPath)
+            ?? new FileInfo(xamlPath).DirectoryName
+            ?? Environment.CurrentDirectory;
+
+        var existingNamespace = FindExistingLocExtensionNamespace(projectDirectory);
+        if (!string.IsNullOrWhiteSpace(existingNamespace))
+            return "clr-namespace:" + existingNamespace;
+
+        if (ProjectUsesLizeriumLocalizationPackage(projectDirectory))
+            return "clr-namespace:Lizerium.Localization.Core;assembly=Lizerium.Localization.Core";
+
+        EnsureGeneratedRuntime(projectDirectory);
+        return "clr-namespace:Lizerium.Generated.Localization";
+    }
+
+    private static string? FindProjectDirectory(string xamlPath)
+    {
+        var directory = new FileInfo(xamlPath).Directory;
+        while (directory is not null)
+        {
+            if (Directory.EnumerateFiles(directory.FullName, "*.csproj").Any())
+                return directory.FullName;
+
+            directory = directory.Parent;
+        }
+
+        return null;
+    }
+
+    private static string? FindExistingLocExtensionNamespace(string projectDirectory)
+    {
+        foreach (var file in Directory.EnumerateFiles(projectDirectory, "LocExtension.cs", SearchOption.AllDirectories))
+        {
+            var normalized = file.Replace(Path.DirectorySeparatorChar, '/');
+            if (normalized.IndexOf("/bin/", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                normalized.IndexOf("/obj/", StringComparison.OrdinalIgnoreCase) >= 0)
+                continue;
+
+            var text = File.ReadAllText(file);
+            if (!Regex.IsMatch(text, @"\bclass\s+LocExtension\b"))
+                continue;
+
+            var match = Regex.Match(text, @"namespace\s+(?<name>[A-Za-z_][\w.]*)");
+            if (match.Success)
+                return match.Groups["name"].Value;
+        }
+
+        return null;
+    }
+
+    private static bool ProjectUsesLizeriumLocalizationPackage(string projectDirectory)
+    {
+        foreach (var file in Directory.EnumerateFiles(projectDirectory, "*.csproj", SearchOption.TopDirectoryOnly))
+        {
+            var text = File.ReadAllText(file);
+            if (text.IndexOf("Include=\"Lizerium.Localization.Toolkit\"", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                text.IndexOf("Include=\"Lizerium.Localization.Core\"", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                text.IndexOf("Lizerium.Localization.Core.csproj", StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static void EnsureGeneratedRuntime(string projectDirectory)
+    {
+        var directory = Path.Combine(projectDirectory, "LizeriumGenerated", "Localization");
+        var file = Path.Combine(directory, "LocExtension.cs");
+        if (File.Exists(file))
+            return;
+
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(file, GeneratedRuntimeSource);
+    }
+
+    private const string GeneratedRuntimeSource = @"// <auto-generated />
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Windows.Data;
+using System.Windows.Markup;
+using System.Xml.Linq;
+
+namespace Lizerium.Generated.Localization
+{
+    [MarkupExtensionReturnType(typeof(string))]
+    public sealed class LocExtension : MarkupExtension
+    {
+        public LocExtension()
+        {
+        }
+
+        public LocExtension(string key)
+        {
+            Key = key;
+        }
+
+        [ConstructorArgument(""key"")]
+        public string Key { get; set; }
+
+        public override object ProvideValue(IServiceProvider serviceProvider)
+        {
+            var binding = new Binding(""["" + Key + ""]"")
+            {
+                Source = RuntimeLocalizationService.Instance,
+                Mode = BindingMode.OneWay,
+                FallbackValue = ""["" + Key + ""]""
+            };
+
+            return binding.ProvideValue(serviceProvider);
+        }
+    }
+
+    public sealed class RuntimeLocalizationService : INotifyPropertyChanged
+    {
+        private readonly Dictionary<string, string> _values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private string _language;
+
+        public static RuntimeLocalizationService Instance { get; } = new RuntimeLocalizationService();
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public string this[string key]
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(key))
+                    return string.Empty;
+
+                EnsureLoaded();
+                return _values.TryGetValue(key, out var value) ? value : ""["" + key + ""]"";
+            }
+        }
+
+        public void Reload()
+        {
+            _language = null;
+            EnsureLoaded();
+            OnPropertyChanged(""Item[]"");
+        }
+
+        private void EnsureLoaded()
+        {
+            var language = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+            if (string.Equals(_language, language, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            _values.Clear();
+            Load(Path.Combine(AppContext.BaseDirectory, ""Resources"", ""Localization"", ""Strings.en.resx""));
+            Load(Path.Combine(AppContext.BaseDirectory, ""Resources"", ""Localization"", ""Strings."" + language + "".resx""));
+            _language = language;
+        }
+
+        private void Load(string path)
+        {
+            if (!File.Exists(path))
+                return;
+
+            var document = XDocument.Load(path);
+            foreach (var item in document.Root.Elements(""data""))
+            {
+                var name = item.Attribute(""name"")?.Value;
+                var value = item.Element(""value"")?.Value;
+                if (!string.IsNullOrWhiteSpace(name))
+                    _values[name] = value ?? string.Empty;
+            }
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+}
+";
+
+    private static void RemoveLocNamespaceIfUnused(
+        ITextSnapshot snapshot,
+        ITextEdit edit,
+        XamlLocalizationCandidate candidate,
+        string replacement)
+    {
+        var text = snapshot.GetText();
+        var updatedText = text;
+
+        if (candidate.IsTextNode && candidate.StartTagInsertPosition.HasValue)
+        {
+            updatedText = updatedText.Remove(candidate.ValueSpan.Start, candidate.ValueSpan.Length);
+            updatedText = updatedText.Insert(candidate.StartTagInsertPosition.Value, $" {candidate.PropertyName}=\"{replacement}\"");
+        }
+        else
+        {
+            updatedText = updatedText.Remove(candidate.ValueSpan.Start, candidate.ValueSpan.Length);
+            updatedText = updatedText.Insert(candidate.ValueSpan.Start, replacement);
+        }
+
+        if (updatedText.IndexOf("{loc:", StringComparison.Ordinal) >= 0)
+            return;
+
+        var locNamespaceMatch = Regex.Match(
+            text,
+            @"\s+xmlns:loc\s*=\s*""clr-namespace:Lizerium\.Localization\.Core;assembly=Lizerium\.Localization\.Core""",
+            RegexOptions.Singleline);
+
+        if (locNamespaceMatch.Success)
+            edit.Delete(new Span(locNamespaceMatch.Index, locNamespaceMatch.Length));
     }
 
     private static void WriteResources(XamlLocalizationCandidate candidate, CancellationToken cancellationToken)

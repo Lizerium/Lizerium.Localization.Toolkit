@@ -21,8 +21,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Net.Http.Json" Version="10.0.7" />
-    <PackageReference Include="System.Text.Json" Version="10.0.7" />
     <None Include="..\..\docs\ai-core.md" Pack="true" PackagePath="\" />
     <None Include="..\..\media\LOGO_400x400.png" Pack="true" PackagePath="\" />
   </ItemGroup>

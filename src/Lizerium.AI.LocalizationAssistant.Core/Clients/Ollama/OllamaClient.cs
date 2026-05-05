@@ -6,9 +6,10 @@
  * Version: 1.0.8
  */
 
-using System.Net.Http.Json;
+using System.Text;
 
 using Lizerium.AI.LocalizationAssistant.Core.Components.Ollama;
+using Lizerium.AI.LocalizationAssistant.Core.Services;
 
 namespace Lizerium.AI.LocalizationAssistant.Core.Clients.Ollama
 {
@@ -39,18 +40,19 @@ namespace Lizerium.AI.LocalizationAssistant.Core.Clients.Ollama
 
         public async Task<string> GenerateAsync(PromtConfig config, CancellationToken cancellationToken = default)
         {
-            var request = new OllamaGenerateRequest()
-            {
-                Model = config.Model,
-                Prompt = config.Prompt,
-                Stream = false
-            };
+            var requestJson = SimpleJson.CreateObject(
+                ("model", config.Model),
+                ("prompt", config.Prompt),
+                ("stream", false));
 
-            var response = await _http.PostAsJsonAsync(config.GenerateEndpoint, request, cancellationToken).ConfigureAwait(false);
+            using var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+            var response = await _http.PostAsync(config.GenerateEndpoint, content, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
-            var json = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>(cancellationToken: cancellationToken).ConfigureAwait(false);
-            return json?.Response ?? "";
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            return SimpleJson.TryGetString(json, "response", out var generated)
+                ? generated
+                : string.Empty;
         }
     }
 }

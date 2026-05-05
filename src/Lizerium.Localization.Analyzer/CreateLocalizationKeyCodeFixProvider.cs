@@ -45,9 +45,8 @@ public sealed class CreateLocalizationKeyCodeFixProvider : CodeFixProvider
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
         var node = root?.FindNode(context.Span);
 
-        var literal = node?.FirstAncestorOrSelf<LiteralExpressionSyntax>();
-
-        if (literal == null || !literal.IsKind(SyntaxKind.StringLiteralExpression))
+        var invocation = node?.FirstAncestorOrSelf<InvocationExpressionSyntax>();
+        if (invocation is null)
             return;
 
         var diagnostic = context.Diagnostics.FirstOrDefault();

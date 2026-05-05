@@ -27,12 +27,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.14.40265" PrivateAssets="all" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.14.2120" PrivateAssets="all" />
-    <PackageReference Include="System.Net.Http.Json" Version="10.0.7">
-      <ForceIncludeInVSIX>true</ForceIncludeInVSIX>
-    </PackageReference>
-    <PackageReference Include="System.Text.Json" Version="10.0.7">
-      <ForceIncludeInVSIX>true</ForceIncludeInVSIX>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

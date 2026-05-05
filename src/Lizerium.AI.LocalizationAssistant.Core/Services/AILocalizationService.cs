@@ -6,8 +6,6 @@
  * Version: 1.0.8
  */
 
-using System.Text.Json;
-
 using System.Text.RegularExpressions;
 
 using Lizerium.AI.LocalizationAssistant.Core.Clients.Libre;
@@ -47,15 +45,27 @@ namespace Lizerium.AI.LocalizationAssistant.Core.Services
             _config.Prompt = LocalizationPromptBuilder.Build(
                 sourceText);
 
-            var raw = await _ollama.GenerateAsync(
-                new PromtConfig()
-                {
-                    Model = _config.Model,
-                    Prompt = _config.Prompt,
-                    GenerateEndpoint = _config.GenerateEndpoint,
-                    RequestTimeoutSeconds = _config.RequestTimeoutSeconds,
-                },
-                cancellationToken).ConfigureAwait(false);
+            string raw;
+
+            try
+            {
+                raw = await _ollama.GenerateAsync(
+                    new PromtConfig()
+                    {
+                        Model = _config.Model,
+                        Prompt = _config.Prompt,
+                        GenerateEndpoint = _config.GenerateEndpoint,
+                        RequestTimeoutSeconds = _config.RequestTimeoutSeconds,
+                    },
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+            {
+                return await CreateLibreFallbackAsync(
+                    sourceText,
+                    "Ollama unavailable: " + ex.Message,
+                    cancellationToken).ConfigureAwait(false);
+            }
 
             Console.WriteLine("FULL RAW:");
             Console.WriteLine(raw);
@@ -80,25 +90,12 @@ namespace Lizerium.AI.LocalizationAssistant.Core.Services
             raw = raw.Trim();
             raw = raw.TrimStart('\uFEFF');
 
-            LocalizationResult? result;
-
-            try
-            {
-                result = JsonSerializer.Deserialize<LocalizationResult>(
-                    raw,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-            }
-            catch (JsonException ex)
+            var result = ParseLocalizationResult(raw);
+            if (result == null)
             {
                 Console.WriteLine("JSON parse error:");
-                Console.WriteLine(ex.Message);
                 Console.WriteLine("BROKEN JSON:");
                 Console.WriteLine(raw);
-
-                result = null;
             }
            
             if (result == null)
@@ -130,6 +127,69 @@ namespace Lizerium.AI.LocalizationAssistant.Core.Services
 
             EnsurePlaceholders(sourceText, result);
 
+            return result;
+        }
+
+        private static LocalizationResult? ParseLocalizationResult(string raw)
+        {
+            var hasEn = SimpleJson.TryGetString(raw, "en", out var en);
+            var hasRu = SimpleJson.TryGetString(raw, "ru", out var ru);
+
+            if (!hasEn && !hasRu)
+                return null;
+
+            return new LocalizationResult
+            {
+                En = en,
+                Ru = ru
+            };
+        }
+
+        private async Task<LocalizationResult?> CreateLibreFallbackAsync(
+            string sourceText,
+            string reason,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(_config.LibreUrl))
+                return null;
+
+            var result = new LocalizationResult();
+            result.LocErrors.Add(new LocError(LLMError.RU, reason));
+
+            PreserveSourceLanguageValue(sourceText, result);
+            ApplyKnownUiGlossary(sourceText, result);
+
+            if (!string.IsNullOrWhiteSpace(result.En) && !string.IsNullOrWhiteSpace(result.Ru))
+            {
+                EnsurePlaceholders(sourceText, result);
+                return result;
+            }
+
+            try
+            {
+                var libre = new LibreTranslateClient(_config.LibreUrl, TimeSpan.FromSeconds(_config.RequestTimeoutSeconds));
+
+                if (!string.IsNullOrWhiteSpace(result.En))
+                {
+                    result.Ru = await libre.TranslateAsync(result.En, "en", "ru", cancellationToken).ConfigureAwait(false);
+                }
+                else if (!string.IsNullOrWhiteSpace(result.Ru))
+                {
+                    result.En = await libre.TranslateAsync(result.Ru, "ru", "en", cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    result.En = sourceText;
+                    result.Ru = await libre.TranslateAsync(sourceText, "en", "ru", cancellationToken).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+            {
+                result.LocErrors.Add(new LocError(LLMError.RU, "LibreTranslate fallback failed: " + ex.Message));
+                return null;
+            }
+
+            EnsurePlaceholders(sourceText, result);
             return result;
         }
 

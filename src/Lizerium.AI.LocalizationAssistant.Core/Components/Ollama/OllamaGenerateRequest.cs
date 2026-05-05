@@ -6,19 +6,14 @@
  * Version: 1.0.8
  */
 
-using System.Text.Json.Serialization;
-
 namespace Lizerium.AI.LocalizationAssistant.Core.Components.Ollama
 {
     public sealed class OllamaGenerateRequest
     {
-        [JsonPropertyName("model")]
         public string Model { get; set; } = "";
 
-        [JsonPropertyName("prompt")]
         public string Prompt { get; set; } = "";
 
-        [JsonPropertyName("stream")]
         public bool Stream { get; set; }
     }
 }

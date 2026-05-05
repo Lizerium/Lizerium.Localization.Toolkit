@@ -44,18 +44,5 @@ public partial class MainWindow : Window
     {
         TitleText.Text = L.MainWindow.Title();
         MessageText.Text = L.MainWindow.Log.DirectoryCorrect(AppContext.BaseDirectory);
-
-        // These calls demonstrate CodeFix-generated keys for parameterless and parameterized values.
-        var msgLog = L.MainWindow.TestMsgLog();
-        var paramMsgLog = L.MainWindow.TestParam.CreateValue(AppContext.BaseDirectory, "param2", 5);
-        var test = L.MainWindow.Render.Text2();
-        var testParams = L.MainWindow.Render.Text1(AppContext.BaseDirectory, 5);
-        var test2 = L.MainWindow.Render.Text3();
-        var test3 = L.MainWindow.Render.Text4(AppContext.BaseDirectory);
-        var test4 = L.MainWindow.Render.Text5();
-        var test5Params = L.MainWindow.Render.Text6(AppContext.BaseDirectory);
-        var test6 = L.MainWindow.Render.Text7();
-        var test7Param = L.MainWindow.Render.Text8(AppContext.BaseDirectory);
-        MessageText.Text = test7Param;
     }
 }
