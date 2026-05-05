@@ -14,9 +14,9 @@ namespace Lizerium.Localization.Ai.Analyzer
 {
     internal class AiRunner
     {
-        public static async Task<LocalizationResult?> RunAsync(string text)
+        public static async Task<LocalizationResult?> RunAsync(string text, string? projectFilePath = null)
         {
-            var options = AiLocalizationOptions.FromEnvironment();
+            var options = AiLocalizationOptions.FromProject(projectFilePath);
             var ollama = new OllamaClient(
                 options.OllamaBaseUrl,
                 TimeSpan.FromSeconds(options.RequestTimeoutSeconds));

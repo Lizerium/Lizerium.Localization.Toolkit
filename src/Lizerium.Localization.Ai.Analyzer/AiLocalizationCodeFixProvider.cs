@@ -106,7 +106,7 @@ namespace Lizerium.Localization.Ai.Analyzer
                 if (argumentCount > 0)
                     key += "_Format";
 
-                var result = await GetSafeLocalizationResultAsync(sourceText);
+                var result = await GetSafeLocalizationResultAsync(sourceText, project.FilePath);
 
                 if (en is not null)
                     solution = await AddOrUpdateAsync(solution, en, key, result.En, token);
@@ -291,17 +291,38 @@ namespace Lizerium.Localization.Ai.Analyzer
                 .WithTriviaFrom(localizableNode);
 
             var newRoot = root.ReplaceNode(localizableNode, invocation);
+            newRoot = EnsureLocalizationAlias(newRoot);
 
             return solution.WithDocumentSyntaxRoot(document.Id, newRoot);
         }
 
-        private static async Task<LocalizationResult> GetSafeLocalizationResultAsync(string sourceText)
+        private static SyntaxNode EnsureLocalizationAlias(SyntaxNode root)
+        {
+            if (root is not CompilationUnitSyntax compilationUnit)
+                return root;
+
+            var hasAlias = compilationUnit.Usings.Any(item =>
+                item.Alias?.Name.Identifier.ValueText == "L" &&
+                string.Equals(item.Name?.ToString(), "Generated.Localization.Localization", StringComparison.Ordinal));
+
+            if (hasAlias)
+                return root;
+
+            var aliasUsing = SyntaxFactory.UsingDirective(
+                    SyntaxFactory.NameEquals("L"),
+                    SyntaxFactory.ParseName("Generated.Localization.Localization"))
+                .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed);
+
+            return compilationUnit.AddUsings(aliasUsing);
+        }
+
+        private static async Task<LocalizationResult> GetSafeLocalizationResultAsync(string sourceText, string? projectFilePath)
         {
             LocalizationResult? result = null;
 
             try
             {
-                result = await AiRunner.RunAsync(sourceText).ConfigureAwait(false);
+                result = await AiRunner.RunAsync(sourceText, projectFilePath).ConfigureAwait(false);
             }
             catch
             {

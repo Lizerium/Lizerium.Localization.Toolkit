@@ -71,7 +71,10 @@ namespace Lizerium.AI.LocalizationAssistant.Core.Services
             Console.WriteLine(raw);
 
             if (string.IsNullOrWhiteSpace(raw))
-                return null;
+                return await CreateLibreFallbackAsync(
+                    sourceText,
+                    "Ollama returned an empty response.",
+                    cancellationToken).ConfigureAwait(false);
 
             raw = raw.Replace("```json", "")
              .Replace("```css", "")
@@ -83,7 +86,10 @@ namespace Lizerium.AI.LocalizationAssistant.Core.Services
             if (start < 0 || end <= start)
             {
                 Console.WriteLine("JSON not found in response");
-                return null;
+                return await CreateLibreFallbackAsync(
+                    sourceText,
+                    "Ollama response did not contain JSON.",
+                    cancellationToken).ConfigureAwait(false);
             }
 
             raw = raw.Substring(start, end - start + 1);
@@ -99,7 +105,10 @@ namespace Lizerium.AI.LocalizationAssistant.Core.Services
             }
            
             if (result == null)
-                result = new LocalizationResult();
+                return await CreateLibreFallbackAsync(
+                    sourceText,
+                    "Ollama response did not contain en/ru values.",
+                    cancellationToken).ConfigureAwait(false);
 
             PreserveSourceLanguageValue(sourceText, result);
             ApplyKnownUiGlossary(sourceText, result);

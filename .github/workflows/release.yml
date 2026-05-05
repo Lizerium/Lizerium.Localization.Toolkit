@@ -181,6 +181,15 @@ jobs:
           - Sample project source archive
           - SHA-256 checksums
 
+          ### Что входит
+
+          - NuGet-пакеты: Toolkit, Core, AI Core, Generator, Analyzer, AI Analyzer, GUI
+          - VSIX для Visual Studio 2022: `Lizerium.Localization.Xaml.Vsix-$tag.vsix`
+          - Самостоятельная Windows x64 сборка GUI-редактора
+          - Опубликованная Windows x64 сборка WPF sample-приложения
+          - Архив исходников sample-проекта
+          - SHA-256 checksums
+
           ### VSIX
 
           The VSIX is a standalone Visual Studio editor extension. It is not a runtime dependency of target applications.
@@ -193,11 +202,30 @@ jobs:
           - If the target project has no `LocExtension`, the VSIX adds a small source-only runtime under `LizeriumGenerated/Localization`.
           - Generated keys are ASCII and stable; translated text is written only into RESX values.
 
+          ### VSIX по-русски
+
+          VSIX - это самостоятельное расширение редактора Visual Studio. Оно не является runtime-зависимостью целевого приложения.
+
+          Расширение превращает XAML-литералы WPF в localization markup, пишет `Resources/Localization/Strings.en.resx` и `Strings.ru.resx`, а переводы генерирует через Ollama с fallback в LibreTranslate.
+
+          Поведение runtime:
+
+          - Если в проекте уже есть `LocExtension`, VSIX использует его.
+          - Если в проекте стоит `Lizerium.Localization.Toolkit` или `Lizerium.Localization.Core`, VSIX использует runtime из NuGet.
+          - Если runtime не найден, VSIX добавляет маленький source-only runtime в `LizeriumGenerated/Localization`.
+          - Ключи генерируются ASCII и остаются стабильными; перевод пишется только в значения RESX.
+
           ### NuGet Compatibility
 
           The VSIX does not conflict with `Lizerium.Localization.Toolkit`.
 
           With the NuGet package installed, the project already has runtime localization support, generator, and analyzers. The VSIX only edits XAML and RESX files. It does not add a PackageReference and does not replace the NuGet runtime.
+
+          ### Совместимость с NuGet
+
+          VSIX не конфликтует с `Lizerium.Localization.Toolkit`.
+
+          Если NuGet-пакет установлен, в проекте уже есть runtime локализации, генератор и анализаторы. VSIX только редактирует XAML и RESX-файлы. Он не добавляет `PackageReference` и не заменяет runtime из NuGet.
 
           ### Install NuGet From The Release Archive
 
@@ -211,9 +239,21 @@ jobs:
 
           Download `Lizerium.Localization.Xaml.Vsix-$tag.vsix`, close Visual Studio, install it, then reopen Visual Studio.
 
+          ### Установка VSIX
+
+          Скачайте `Lizerium.Localization.Xaml.Vsix-$tag.vsix`, закройте Visual Studio, установите расширение и снова откройте Visual Studio.
+
           ### GUI Usage
 
           Download the GUI archive, extract it, and run:
+
+          ```powershell
+          .\Lizerium.Localization.GUI.exe
+          ```
+
+          ### Использование GUI
+
+          Скачайте архив GUI, распакуйте его и запустите:
 
           ```powershell
           .\Lizerium.Localization.GUI.exe
