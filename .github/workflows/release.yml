@@ -58,6 +58,7 @@ jobs:
           -c ${{ env.CONFIGURATION }}
           --no-restore
           --no-build
+          --filter "Category!=LiveOllama"
 
       - name: Pack NuGet packages
         shell: pwsh

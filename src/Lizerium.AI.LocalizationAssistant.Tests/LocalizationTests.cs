@@ -199,6 +199,7 @@ namespace Lizerium.AI.LocalizationAssistant.Tests
         [InlineData("Access denied: {0}")]
         [InlineData("Invalid file name: {0}")]
         [InlineData("User does not have permission")]
+        [Trait("Category", "LiveOllama")]
         public async Task LLM_Should_Handle_Multiple_Inputs(string input)
         {
             var ollama = new OllamaClient("http://localhost:11434");
@@ -211,6 +212,7 @@ namespace Lizerium.AI.LocalizationAssistant.Tests
         }
 
         [Fact]
+        [Trait("Category", "LiveOllama")]
         public async Task LLM_Should_Use_Context_In_Key()
         {
             var ollama = new OllamaClient("http://localhost:11434");
@@ -228,6 +230,7 @@ namespace Lizerium.AI.LocalizationAssistant.Tests
         }
 
         [Fact]
+        [Trait("Category", "LiveOllama")]
         public async Task LLM_Should_Respect_Category()
         {
             var ollama = new OllamaClient("http://localhost:11434");
@@ -247,6 +250,7 @@ namespace Lizerium.AI.LocalizationAssistant.Tests
         [InlineData("File not found: {0}")]
         [InlineData("Запуск процесса сканирования файла: {0}")]
         [InlineData("Сканирую файл: {0}")]
+        [Trait("Category", "LiveOllama")]
         public async Task LLM_Should_Generate_Valid_Localization(string inputText)
         {
             var ollama = new OllamaClient("http://localhost:11434");
