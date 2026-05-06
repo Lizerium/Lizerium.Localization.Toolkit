@@ -89,7 +89,9 @@ public sealed partial class LocalizationGenerator : IIncrementalGenerator
         {
             // English is preferred for placeholder metadata, with Russian as a fallback for one-sided keys.
             var entry = en.TryGetValue(key, out var enEntry) ? enEntry : ru[key];
-            return ApiEntry.From(entry);
+            var enValue = enEntry?.Value;
+            var ruValue = ru.TryGetValue(key, out var ruEntry) ? ruEntry.Value : null;
+            return ApiEntry.From(entry, enValue, ruValue);
         })), Encoding.UTF8));
     }
 

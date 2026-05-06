@@ -1,13 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
   <Metadata>
-    <Identity Id="Lizerium.Localization.Xaml.Vsix" Version="1.0.4" Language="en-US" Publisher="Dvurechensky" />
-    <DisplayName>Lizerium Localization XAML Tools</DisplayName>
-    <Description xml:space="preserve">Adds Visual Studio XAML light bulb actions for WPF localization. Select XAML text or place the caret inside a literal, run "Create XAML localization key", and the extension will add/update RESX keys, generate AI translations through the configured Ollama/LibreTranslate servers, and insert {loc:Loc Key}. Existing project LocExtension is reused; otherwise a small source-only runtime LocExtension is added to the project. Server URLs and model are configurable in Tools - Options - Lizerium Localization - AI Servers.</Description>
+    <Identity Id="Lizerium.Localization.EditorHints" Version="1.0.4" Language="en-US" Publisher="Dvurechensky" />
+    <DisplayName>Lizerium Localization Editor Hints</DisplayName>
+    <Description xml:space="preserve">Shows inline Visual Studio editor hints for generated Lizerium localization calls in C# files. The hint language follows the Visual Studio UI language and falls back to English.</Description>
     <MoreInfo>https://github.com/Lizerium/Lizerium.Localization.Toolkit</MoreInfo>
     <Icon>LOGO_400x400.png</Icon>
     <PreviewImage>LOGO_400x400.png</PreviewImage>
-    <Tags>Localization;XAML;WPF;RESX;Lizerium</Tags>
+    <Tags>Localization;Editor;Hints;RESX;Lizerium;CSharp;Visual Studio</Tags>
   </Metadata>
   <Installation>
     <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0,18.0)">
@@ -23,11 +22,10 @@
   <Dependencies>
     <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" Version="[4.7.2,)" />
   </Dependencies>
-  <Assets>
-    <Asset Type="Microsoft.VisualStudio.MefComponent" Path="|Lizerium.Localization.Xaml.Vsix|" />
-    <Asset Type="Microsoft.VisualStudio.VsPackage" Path="|Lizerium.Localization.Xaml.Vsix|" />
-  </Assets>
   <Prerequisites>
     <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,18.0)" DisplayName="Visual Studio core editor" />
   </Prerequisites>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.MefComponent" Path="Lizerium.Localization.EditorHints.dll" />
+  </Assets>
 </PackageManifest>

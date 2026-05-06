@@ -79,6 +79,7 @@ public sealed partial class LocalizationGenerator
         private static void WriteMethod(StringBuilder builder, int indent, ApiEntry entry, string methodName)
         {
             var parameters = Enumerable.Range(0, entry.ParamCount).Select(i => "object arg" + i).ToArray();
+            WriteDocumentation(builder, indent, entry);
             AppendIndent(builder, indent);
             builder.Append("public static string ").Append(methodName).Append('(').Append(string.Join(", ", parameters)).AppendLine(")");
             AppendIndent(builder, indent + 1);
@@ -95,6 +96,53 @@ public sealed partial class LocalizationGenerator
             foreach (var parameter in parameters.Select(p => p.Split(' ')[1]))
                 builder.Append(", ").Append(parameter);
             builder.AppendLine(");");
+        }
+
+        private static void WriteDocumentation(StringBuilder builder, int indent, ApiEntry entry)
+        {
+            AppendXmlDocRaw(builder, indent, "<summary>");
+            AppendXmlDocPara(builder, indent, "Key: " + entry.Key);
+            if (!string.IsNullOrWhiteSpace(entry.Ru))
+                AppendXmlDocPara(builder, indent, "ru: " + NormalizeDocText(entry.Ru!));
+            if (!string.IsNullOrWhiteSpace(entry.En))
+                AppendXmlDocPara(builder, indent, "en: " + NormalizeDocText(entry.En!));
+            AppendXmlDocRaw(builder, indent, "</summary>");
+
+            for (var i = 0; i < entry.ParamCount; i++)
+                AppendXmlDocRaw(builder, indent, "<param name=\"arg" + i + "\">Format argument {" + i + "}.</param>");
+        }
+
+        private static void AppendXmlDoc(StringBuilder builder, int indent, string text)
+        {
+            AppendIndent(builder, indent);
+            builder.Append("/// ").AppendLine(EscapeXml(text));
+        }
+
+        private static void AppendXmlDocPara(StringBuilder builder, int indent, string text)
+        {
+            AppendIndent(builder, indent);
+            builder.Append("/// <para>").Append(EscapeXml(text)).AppendLine("</para>");
+        }
+
+        private static void AppendXmlDocRaw(StringBuilder builder, int indent, string text)
+        {
+            AppendIndent(builder, indent);
+            builder.Append("/// ").AppendLine(text);
+        }
+
+        private static string NormalizeDocText(string value)
+        {
+            var normalized = string.Join(" ", value.Split(new[] { '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries).Select(part => part.Trim()));
+            return normalized.Length <= 180 ? normalized : normalized.Substring(0, 177) + "...";
+        }
+
+        private static string EscapeXml(string value)
+        {
+            return value
+                .Replace("&", "&amp;")
+                .Replace("<", "&lt;")
+                .Replace(">", "&gt;")
+                .Replace("\"", "&quot;");
         }
 
         private static void AppendLiteral(StringBuilder builder, string value)

@@ -16,6 +16,17 @@
 
 `Lizerium.Localization.Toolkit` - набор инструментов для локализации .NET/WPF проектов на `.resx`: runtime, source generator, analyzer, CodeFix, AI-генерация переводов, XAML VSIX и WPF редактор ресурсов.
 
+## Возможности
+
+1. Автогенерация файлов ресурсов и ключей доступа к ним
+   - ![1](media/docs/1.png)
+   - ![2](media/docs/2.png)
+2. Автоподсказка в реальном времени заданных значений для ключей
+   - ![3](media/docs/devenv_2Vq5OSsGQR.gif)
+3. Автоперевод XAML
+   - ![2.gif](media/docs/devenv_T79vIiMzp6.gif)
+   - ![3](media/docs/3.png)
+
 ## Установка
 
 ```xml
@@ -24,16 +35,16 @@
 
 ## Что входит
 
-| Пакет | Назначение |
-| --- | --- |
-| `Lizerium.Localization.Toolkit` | All-in-one пакет: runtime, generator, analyzer, AI CodeFix |
-| `Lizerium.Localization.Core` | Runtime `.resx`, `LocalizationService`, WPF `{loc:Loc}` |
-| `Lizerium.Localization.Generator` | Source generator для `Generated.Localization.Localization` |
-| `Lizerium.Localization.Analyzer` | Проверка отсутствующих ключей и CodeFix |
-| `Lizerium.Localization.Ai.Analyzer` | AI CodeFix для C# строк и interpolated strings |
-| `Lizerium.AI.LocalizationAssistant.Core` | Конфигурируемое AI ядро для Ollama/LibreTranslate |
-| `Lizerium.Localization.Xaml.Vsix` | Лампочка Visual Studio для WPF XAML |
-| `Lizerium.Localization.GUI` | WPF редактор `.resx` переводов |
+| Пакет                                    | Назначение                                                 |
+| ---------------------------------------- | ---------------------------------------------------------- |
+| `Lizerium.Localization.Toolkit`          | All-in-one пакет: runtime, generator, analyzer, AI CodeFix |
+| `Lizerium.Localization.Core`             | Runtime `.resx`, `LocalizationService`, WPF `{loc:Loc}`    |
+| `Lizerium.Localization.Generator`        | Source generator для `Generated.Localization.Localization` |
+| `Lizerium.Localization.Analyzer`         | Проверка отсутствующих ключей и CodeFix                    |
+| `Lizerium.Localization.Ai.Analyzer`      | AI CodeFix для C# строк и interpolated strings             |
+| `Lizerium.AI.LocalizationAssistant.Core` | Конфигурируемое AI ядро для Ollama/LibreTranslate          |
+| `Lizerium.Localization.Xaml.Vsix`        | Лампочка Visual Studio для WPF XAML                        |
+| `Lizerium.Localization.GUI`              | WPF редактор `.resx` переводов                             |
 
 ## Настройка проекта
 

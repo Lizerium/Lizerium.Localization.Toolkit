@@ -44,5 +44,6 @@ public partial class MainWindow : Window
     {
         TitleText.Text = L.MainWindow.Title();
         MessageText.Text = L.MainWindow.Log.DirectoryCorrect(AppContext.BaseDirectory);
+        var testLocal1 = "Тестирование одиночной строки";
     }
 }

@@ -31,6 +31,21 @@
 
 ---
 
+## Features
+
+1. Auto-generation of resource files and access keys
+   - ![1](media/docs/1.png)
+   - ![2](media/docs/2.png)
+
+2. Real-time auto-suggestion of specified key values
+   - ![1.gif](media/docs/devenv_2Vq5OSsGQR.gif)
+
+3. XAML auto-translation
+   - ![2.gif](media/docs/devenv_T79vIiMzp6.gif)
+   - ![3](media/docs/3.png)
+
+---
+
 `Lizerium.Localization.Toolkit` is a .NET localization workflow for projects that store translations in `.resx` files. It combines runtime loading, a Roslyn source generator, analyzer diagnostics, Visual Studio code fixes, and a standalone WPF editor.
 
 The main package is designed for application projects:
@@ -43,15 +58,15 @@ It brings the runtime package and registers the generator/analyzer from the NuGe
 
 ## Packages
 
-| Package                           | Purpose                                                                         |
-| --------------------------------- | ------------------------------------------------------------------------------- |
-| `Lizerium.Localization.Toolkit`   | All-in-one package for applications: runtime, generator, analyzer, and code fix |
-| `Lizerium.Localization.Core`      | Runtime `.resx` reader/writer, `LocalizationService`, and WPF XAML `{loc:Loc}`  |
-| `Lizerium.Localization.Generator` | Incremental source generator for `Generated.Localization.Localization`          |
-| `Lizerium.Localization.Analyzer`  | Analyzer and CodeFix provider for missing localization keys                     |
-| `Lizerium.Localization.Ai.Analyzer` | AI CodeFix for C# string and interpolated string localization                 |
-| `Lizerium.Localization.GUI`       | Standalone WPF translation editor                                               |
-| `Lizerium.Localization.Xaml.Vsix` | Visual Studio XAML light bulb for WPF text localization                         |
+| Package                             | Purpose                                                                         |
+| ----------------------------------- | ------------------------------------------------------------------------------- |
+| `Lizerium.Localization.Toolkit`     | All-in-one package for applications: runtime, generator, analyzer, and code fix |
+| `Lizerium.Localization.Core`        | Runtime `.resx` reader/writer, `LocalizationService`, and WPF XAML `{loc:Loc}`  |
+| `Lizerium.Localization.Generator`   | Incremental source generator for `Generated.Localization.Localization`          |
+| `Lizerium.Localization.Analyzer`    | Analyzer and CodeFix provider for missing localization keys                     |
+| `Lizerium.Localization.Ai.Analyzer` | AI CodeFix for C# string and interpolated string localization                   |
+| `Lizerium.Localization.GUI`         | Standalone WPF translation editor                                               |
+| `Lizerium.Localization.Xaml.Vsix`   | Visual Studio XAML light bulb for WPF text localization                         |
 
 Use separate packages only when you need a custom package layout:
 

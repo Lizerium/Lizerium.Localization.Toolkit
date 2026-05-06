@@ -1,14 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-	<LangVersion>latest</LangVersion>
-	<ImplicitUsings>enable</ImplicitUsings>
-	<Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
     <PackageId>Lizerium.AI.LocalizationAssistant.Core</PackageId>
-    <Version>1.0.2</Version>
-    <AssemblyVersion>1.0.2.0</AssemblyVersion>
-    <FileVersion>1.0.2.0</FileVersion>
+    <Version>1.0.4</Version>
+    <AssemblyVersion>1.0.4.0</AssemblyVersion>
+    <FileVersion>1.0.4.0</FileVersion>
     <Authors>Dvurechensky</Authors>
     <Title>Lizerium AI Localization Assistant Core</Title>
     <Description>Configurable AI localization helper library for Ollama and LibreTranslate workflows.</Description>
@@ -24,5 +23,4 @@
     <None Include="..\..\docs\ai-core.md" Pack="true" PackagePath="\" />
     <None Include="..\..\media\LOGO_400x400.png" Pack="true" PackagePath="\" />
   </ItemGroup>
-
 </Project>

@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <PackageId>Lizerium.Localization.GUI</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.4</Version>
     <Title>Lizerium Localization GUI</Title>
     <Authors>Dvurechensky</Authors>
     <Copyright>Copyright (c) Nikolay Dvurechensky</Copyright>

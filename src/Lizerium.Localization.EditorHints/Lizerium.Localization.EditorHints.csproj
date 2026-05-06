@@ -1,0 +1,84 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <UseCodebase>false</UseCodebase>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment>
+    <GeneratePkgDefFile>false</GeneratePkgDefFile>
+    <TemplateOutputDirectory>$(IntermediateOutputPath)Templates</TemplateOutputDirectory>
+    <VsixPackageVersion>1.0.4</VsixPackageVersion>
+    <Version>$(VsixPackageVersion)</Version>
+    <AssemblyVersion>$(VsixPackageVersion).0</AssemblyVersion>
+    <FileVersion>$(VsixPackageVersion).0</FileVersion>
+    <AssemblyName>Lizerium.Localization.EditorHints</AssemblyName>
+    <RootNamespace>Lizerium.Localization.EditorHints</RootNamespace>
+    <TargetVsixContainerName>Lizerium.Localization.EditorHints.$(VsixPackageVersion).vsix</TargetVsixContainerName>
+    <TargetVsixContainer>$(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\$(TargetVsixContainerName)</TargetVsixContainer>
+    <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
+    <DeployExtension>false</DeployExtension>
+    <PackageId>Lizerium.Localization.EditorHints</PackageId>
+    <Authors>Dvurechensky</Authors>
+    <Description>Visual Studio inline editor hints for generated Lizerium localization calls.</Description>
+    <VsInstallRoot Condition="'$(VsInstallRoot)' == '' and '$(VSINSTALLDIR)' != ''">$(VSINSTALLDIR)</VsInstallRoot>
+    <VsInstallRoot Condition="'$(VsInstallRoot)' == '' and Exists('C:\Program Files\Microsoft Visual Studio\2022\Enterprise')">C:\Program Files\Microsoft Visual Studio\2022\Enterprise</VsInstallRoot>
+    <VsInstallRoot Condition="'$(VsInstallRoot)' == '' and Exists('C:\Program Files\Microsoft Visual Studio\2022\Professional')">C:\Program Files\Microsoft Visual Studio\2022\Professional</VsInstallRoot>
+    <VsInstallRoot Condition="'$(VsInstallRoot)' == '' and Exists('C:\Program Files\Microsoft Visual Studio\2022\Community')">C:\Program Files\Microsoft Visual Studio\2022\Community</VsInstallRoot>
+    <VsIdeRoot>$(VsInstallRoot)\Common7\IDE</VsIdeRoot>
+    <VsEditorRoot>$(VsIdeRoot)\CommonExtensions\Microsoft\Editor</VsEditorRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.14.2120" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.CoreUtility">
+      <HintPath>$(VsEditorRoot)\Microsoft.VisualStudio.CoreUtility.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Text.Data">
+      <HintPath>$(VsEditorRoot)\Microsoft.VisualStudio.Text.Data.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Text.Logic">
+      <HintPath>$(VsEditorRoot)\Microsoft.VisualStudio.Text.Logic.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Text.UI">
+      <HintPath>$(VsEditorRoot)\Microsoft.VisualStudio.Text.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Text.UI.Wpf">
+      <HintPath>$(VsEditorRoot)\Microsoft.VisualStudio.Text.UI.Wpf.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Utilities">
+      <HintPath>$(VsIdeRoot)\Microsoft.VisualStudio.Utilities.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="System.ComponentModel.Composition" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="source.extension.vsixmanifest">
+      <SubType>Designer</SubType>
+    </None>
+    <Content Include="..\..\media\LOGO_400x400.png">
+      <Link>LOGO_400x400.png</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+  </ItemGroup>
+
+  <Import
+    Project="$(NuGetPackageRoot)microsoft.vssdk.buildtools\17.14.2120\tools\vssdk\Microsoft.VsSDK.targets"
+    Condition="Exists('$(NuGetPackageRoot)microsoft.vssdk.buildtools\17.14.2120\tools\vssdk\Microsoft.VsSDK.targets')"
+  />
+
+  <Target Name="BuildVsixContainer" AfterTargets="Build" DependsOnTargets="CreateVsixContainer" />
+</Project>

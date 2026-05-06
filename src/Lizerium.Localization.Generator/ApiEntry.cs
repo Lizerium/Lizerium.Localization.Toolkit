@@ -17,14 +17,21 @@ namespace Lizerium.Localization.Generator;
 
 public sealed partial class LocalizationGenerator
 {
-    private sealed record ApiEntry(string Key, ImmutableArray<string> Path, string MethodName, int ParamCount, bool IsFormat)
+    private sealed record ApiEntry(
+        string Key,
+        ImmutableArray<string> Path,
+        string MethodName,
+        int ParamCount,
+        bool IsFormat,
+        string? En,
+        string? Ru)
     {
         /// <summary>
         /// Converts a localization entry into a generated API method description.
         /// </summary>
         /// <param name="entry">Localization entry read from RESX.</param>
         /// <returns>API shape used by the code builder.</returns>
-        public static ApiEntry From(LocalizationEntry entry)
+        public static ApiEntry From(LocalizationEntry entry, string? en, string? ru)
         {
             var key = entry.Key;
             var isFormat = key.EndsWith("_Format", StringComparison.OrdinalIgnoreCase);
@@ -38,7 +45,7 @@ public sealed partial class LocalizationGenerator
                 ? ImmutableArray<string>.Empty
                 : parts.Take(parts.Length - 1).Select(Sanitize).ToImmutableArray();
 
-            return new ApiEntry(key, path, method, entry.ParamCount, isFormat || entry.ParamCount > 0);
+            return new ApiEntry(key, path, method, entry.ParamCount, isFormat || entry.ParamCount > 0, en, ru);
         }
 
         private static string Sanitize(string value)

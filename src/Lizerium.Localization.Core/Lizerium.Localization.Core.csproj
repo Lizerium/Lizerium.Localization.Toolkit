@@ -1,14 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net8.0;net8.0-windows</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>Lizerium.Localization.Core</PackageId>
-    <Version>1.0.2</Version>
-    <AssemblyVersion>1.0.2.0</AssemblyVersion>
-    <FileVersion>1.0.2.0</FileVersion>
+    <Version>1.0.4</Version>
+    <AssemblyVersion>1.0.4.0</AssemblyVersion>
+    <FileVersion>1.0.4.0</FileVersion>
     <Title>Lizerium Localization Core</Title>
     <Authors>Dvurechensky</Authors>
     <Copyright>Copyright (c) Nikolay Dvurechensky</Copyright>
@@ -30,5 +29,4 @@
     <None Include="..\..\docs\core.md" Pack="true" PackagePath="\" />
     <None Include="..\..\media\LOGO_400x400.png" Pack="true" PackagePath="\" />
   </ItemGroup>
-
 </Project>

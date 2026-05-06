@@ -1,4 +1,4 @@
-name: Lizerium Localization Toolkit Release
+﻿name: Lizerium Localization Toolkit Release
 
 on:
   push:
@@ -36,15 +36,17 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}"
+          $releaseTag = "${{ github.ref_name }}"
           if ($version -eq "main" -or $version -eq "master") {
-            $version = "0.0.0-ci"
+            $version = "1.0.4"
+            $releaseTag = "v$version"
           }
           if ($version.StartsWith("v")) {
             $version = $version.Substring(1)
           }
 
           "PACKAGE_VERSION=$version" >> $env:GITHUB_ENV
-          "RELEASE_TAG=${{ github.ref_name }}" >> $env:GITHUB_ENV
+          "RELEASE_TAG=$releaseTag" >> $env:GITHUB_ENV
 
       - name: Restore solution
         run: dotnet restore Lizerium.Localization.Toolkit.sln
@@ -85,22 +87,35 @@ jobs:
               --no-build
           }
 
-      - name: Build VSIX
+      - name: Build VSIX packages
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force artifacts/vsix | Out-Null
 
-          msbuild src/Lizerium.Localization.Xaml.Vsix/Lizerium.Localization.Xaml.Vsix.csproj `
-            /t:Build `
-            /p:Configuration=$env:CONFIGURATION `
-            /p:RestorePackages=false `
-            /p:Version=$env:PACKAGE_VERSION `
-            /v:minimal
+          $vsixProjects = @(
+            @{
+              Project = "src/Lizerium.Localization.Xaml.Vsix/Lizerium.Localization.Xaml.Vsix.csproj"
+              Output = "src/Lizerium.Localization.Xaml.Vsix/bin/$env:CONFIGURATION/net472/Lizerium.Localization.Xaml.Vsix.$env:PACKAGE_VERSION.vsix"
+              ReleaseName = "Lizerium.Localization.Xaml.Vsix-$env:RELEASE_TAG.vsix"
+            },
+            @{
+              Project = "src/Lizerium.Localization.EditorHints/Lizerium.Localization.EditorHints.csproj"
+              Output = "src/Lizerium.Localization.EditorHints/bin/$env:CONFIGURATION/net472/Lizerium.Localization.EditorHints.$env:PACKAGE_VERSION.vsix"
+              ReleaseName = "Lizerium.Localization.EditorHints-$env:RELEASE_TAG.vsix"
+            }
+          )
 
-          Copy-Item `
-            src/Lizerium.Localization.Xaml.Vsix/bin/$env:CONFIGURATION/net472/Lizerium.Localization.Xaml.Vsix.vsix `
-            artifacts/vsix/Lizerium.Localization.Xaml.Vsix-$env:RELEASE_TAG.vsix `
-            -Force
+          foreach ($item in $vsixProjects) {
+            msbuild $item.Project `
+              /t:Build `
+              /p:Configuration=$env:CONFIGURATION `
+              /p:RestorePackages=false `
+              /p:VsixPackageVersion=$env:PACKAGE_VERSION `
+              /p:Version=$env:PACKAGE_VERSION `
+              /v:minimal
+
+            Copy-Item $item.Output "artifacts/vsix/$($item.ReleaseName)" -Force
+          }
 
       - name: Restore publish projects
         run: |
@@ -161,6 +176,7 @@ jobs:
             -Force
 
           Copy-Item artifacts/vsix/*.vsix artifacts/release/ -Force
+          Copy-Item CHANGELOG.md artifacts/release/CHANGELOG.md -Force
 
           Get-ChildItem artifacts/release -File |
             Get-FileHash -Algorithm SHA256 |
@@ -170,12 +186,13 @@ jobs:
           $releaseNotes = @"
           ## Lizerium.Localization.Toolkit $tag
 
-          A release for the `.resx` localization workflow: runtime, source generator, analyzers, AI translation helpers, GUI editor, sample app, and Visual Studio XAML VSIX.
+          See the full bilingual changelog in `CHANGELOG.md`.
 
           ### Included
 
           - NuGet packages: Toolkit, Core, AI Core, Generator, Analyzer, AI Analyzer, GUI
           - Visual Studio 2022 VSIX: `Lizerium.Localization.Xaml.Vsix-$tag.vsix`
+          - Visual Studio 2022 VSIX: `Lizerium.Localization.EditorHints-$tag.vsix`
           - Windows x64 standalone GUI editor
           - Windows x64 published WPF sample application
           - Sample project source archive
@@ -185,79 +202,11 @@ jobs:
 
           - NuGet-пакеты: Toolkit, Core, AI Core, Generator, Analyzer, AI Analyzer, GUI
           - VSIX для Visual Studio 2022: `Lizerium.Localization.Xaml.Vsix-$tag.vsix`
+          - VSIX для Visual Studio 2022: `Lizerium.Localization.EditorHints-$tag.vsix`
           - Самостоятельная Windows x64 сборка GUI-редактора
           - Опубликованная Windows x64 сборка WPF sample-приложения
           - Архив исходников sample-проекта
           - SHA-256 checksums
-
-          ### VSIX
-
-          The VSIX is a standalone Visual Studio editor extension. It is not a runtime dependency of target applications.
-
-          It converts WPF XAML literals into localization markup, writes `Resources/Localization/Strings.en.resx` and `Strings.ru.resx`, and generates translations through Ollama with LibreTranslate fallback.
-
-          Runtime behavior:
-
-          - If the target project already has `LocExtension`, the VSIX reuses it.
-          - If the target project has no `LocExtension`, the VSIX adds a small source-only runtime under `LizeriumGenerated/Localization`.
-          - Generated keys are ASCII and stable; translated text is written only into RESX values.
-
-          ### VSIX по-русски
-
-          VSIX - это самостоятельное расширение редактора Visual Studio. Оно не является runtime-зависимостью целевого приложения.
-
-          Расширение превращает XAML-литералы WPF в localization markup, пишет `Resources/Localization/Strings.en.resx` и `Strings.ru.resx`, а переводы генерирует через Ollama с fallback в LibreTranslate.
-
-          Поведение runtime:
-
-          - Если в проекте уже есть `LocExtension`, VSIX использует его.
-          - Если в проекте стоит `Lizerium.Localization.Toolkit` или `Lizerium.Localization.Core`, VSIX использует runtime из NuGet.
-          - Если runtime не найден, VSIX добавляет маленький source-only runtime в `LizeriumGenerated/Localization`.
-          - Ключи генерируются ASCII и остаются стабильными; перевод пишется только в значения RESX.
-
-          ### NuGet Compatibility
-
-          The VSIX does not conflict with `Lizerium.Localization.Toolkit`.
-
-          With the NuGet package installed, the project already has runtime localization support, generator, and analyzers. The VSIX only edits XAML and RESX files. It does not add a PackageReference and does not replace the NuGet runtime.
-
-          ### Совместимость с NuGet
-
-          VSIX не конфликтует с `Lizerium.Localization.Toolkit`.
-
-          Если NuGet-пакет установлен, в проекте уже есть runtime локализации, генератор и анализаторы. VSIX только редактирует XAML и RESX-файлы. Он не добавляет `PackageReference` и не заменяет runtime из NuGet.
-
-          ### Install NuGet From The Release Archive
-
-          ```powershell
-          Expand-Archive .\$prefix-NuGet-$tag.zip .\packages
-          dotnet nuget add source .\packages -n LizeriumLocal
-          dotnet add path\to\YourProject.csproj package Lizerium.Localization.Toolkit --version $env:PACKAGE_VERSION --source .\packages
-          ```
-
-          ### Install VSIX
-
-          Download `Lizerium.Localization.Xaml.Vsix-$tag.vsix`, close Visual Studio, install it, then reopen Visual Studio.
-
-          ### Установка VSIX
-
-          Скачайте `Lizerium.Localization.Xaml.Vsix-$tag.vsix`, закройте Visual Studio, установите расширение и снова откройте Visual Studio.
-
-          ### GUI Usage
-
-          Download the GUI archive, extract it, and run:
-
-          ```powershell
-          .\Lizerium.Localization.GUI.exe
-          ```
-
-          ### Использование GUI
-
-          Скачайте архив GUI, распакуйте его и запустите:
-
-          ```powershell
-          .\Lizerium.Localization.GUI.exe
-          ```
           "@
 
           $releaseNotes | Set-Content "artifacts/release/RELEASE_NOTES.md" -Encoding UTF8
@@ -277,4 +226,5 @@ jobs:
           files: |
             artifacts/release/*.zip
             artifacts/release/*.vsix
+            artifacts/release/CHANGELOG.md
             artifacts/release/SHA256SUMS.txt
