@@ -7,6 +7,11 @@
     <img src="https://shields.dvurechensky.pro/nuget/v/Lizerium.Localization.Toolkit">
     <img src="https://shields.dvurechensky.pro/nuget/dt/Lizerium.Localization.Toolkit">
 </p>
+<p align="center">
+    <a href="https://marketplace.visualstudio.com/items?itemName=dvurechensky.lizerium-localization-xaml-tools">
+      <img src="https://shields.dvurechensky.pro/badge/VSIX-Visual_Studio_Marketplace-5C2D91?style=for-the-badge&logo=visualstudio">
+    </a>
+</p>
 
 <p align="center">
   <strong>Язык:</strong>
@@ -14,7 +19,7 @@
   <a href="./README.md">English</a>
 </p>
 
-`Lizerium.Localization.Toolkit` - набор инструментов для локализации .NET/WPF проектов на `.resx`: runtime, source generator, analyzer, CodeFix, AI-генерация переводов, XAML VSIX и WPF редактор ресурсов.
+`Lizerium.Localization.Toolkit` - набор инструментов для локализации .NET/WPF проектов на `.resx`: runtime, source generator, analyzer, CodeFix, AI-генерация переводов, подсказки редактора C#, XAML VSIX и WPF редактор ресурсов.
 
 ## Возможности
 
@@ -44,6 +49,7 @@
 | `Lizerium.Localization.Ai.Analyzer`      | AI CodeFix для C# строк и interpolated strings             |
 | `Lizerium.AI.LocalizationAssistant.Core` | Конфигурируемое AI ядро для Ollama/LibreTranslate          |
 | `Lizerium.Localization.Xaml.Vsix`        | Лампочка Visual Studio для WPF XAML                        |
+| `Lizerium.Localization.EditorHints`      | Inline-подсказки Visual Studio для C# вызовов локализации  |
 | `Lizerium.Localization.GUI`              | WPF редактор `.resx` переводов                             |
 
 ## Настройка проекта
@@ -122,6 +128,24 @@ src\Lizerium.Localization.Xaml.Vsix\bin\Release\net472\Lizerium.Localization.Xam
 ```text
 Tools -> Options -> Lizerium Localization -> AI Servers
 ```
+
+## C# inline-подсказки
+
+`Lizerium.Localization.EditorHints` показывает inline-подсказки в редакторе Visual Studio 2022 рядом с вызовами сгенерированной локализации, например:
+
+```csharp
+var title = L.MainWindow.Title();
+```
+
+Текст подсказки берётся из соответствующего значения `.resx`. Расширение использует язык интерфейса Visual Studio, если значение найдено, и иначе показывает английский текст.
+
+Установите собранный VSIX:
+
+```text
+src\Lizerium.Localization.EditorHints\bin\Release\net472\Lizerium.Localization.EditorHints.1.0.4.vsix
+```
+
+Диагностика пишется в `%TEMP%/Lizerium.Localization.EditorHints.log`.
 
 ## Документация и сайт
 

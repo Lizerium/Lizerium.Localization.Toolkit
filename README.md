@@ -7,6 +7,11 @@
     <img src="https://shields.dvurechensky.pro/nuget/v/Lizerium.Localization.Toolkit">
     <img src="https://shields.dvurechensky.pro/nuget/dt/Lizerium.Localization.Toolkit">
 </p>
+<p align="center">
+    <a href="https://marketplace.visualstudio.com/items?itemName=dvurechensky.lizerium-localization-xaml-tools">
+      <img src="https://shields.dvurechensky.pro/badge/VSIX-Visual_Studio_Marketplace-5C2D91?style=for-the-badge&logo=visualstudio">
+    </a>
+</p>
 
 <div align="center" style="margin: 20px 0; padding: 10px; background: #1c1917; border-radius: 10px;">
   <strong>🌐 Language: </strong>
@@ -46,7 +51,7 @@
 
 ---
 
-`Lizerium.Localization.Toolkit` is a .NET localization workflow for projects that store translations in `.resx` files. It combines runtime loading, a Roslyn source generator, analyzer diagnostics, Visual Studio code fixes, and a standalone WPF editor.
+`Lizerium.Localization.Toolkit` is a .NET localization workflow for projects that store translations in `.resx` files. It combines runtime loading, a Roslyn source generator, analyzer diagnostics, Visual Studio code fixes, C# editor hints, XAML localization tooling, and a standalone WPF editor.
 
 The main package is designed for application projects:
 
@@ -67,6 +72,7 @@ It brings the runtime package and registers the generator/analyzer from the NuGe
 | `Lizerium.Localization.Ai.Analyzer` | AI CodeFix for C# string and interpolated string localization                   |
 | `Lizerium.Localization.GUI`         | Standalone WPF translation editor                                               |
 | `Lizerium.Localization.Xaml.Vsix`   | Visual Studio XAML light bulb for WPF text localization                         |
+| `Lizerium.Localization.EditorHints` | Visual Studio inline hints for generated C# localization calls                  |
 
 Use separate packages only when you need a custom package layout:
 
@@ -265,6 +271,24 @@ Create XAML localization key
 ```
 
 The VSIX writes diagnostics to `%TEMP%/Lizerium.Localization.Xaml.Vsix.log`.
+
+## C# Editor Hints
+
+For Visual Studio 2022, `Lizerium.Localization.EditorHints` shows inline hints next to generated localization calls in C# files, for example:
+
+```csharp
+var title = L.MainWindow.Title();
+```
+
+The hint text is loaded from the matching `.resx` value. The extension uses the Visual Studio UI language when possible and falls back to English.
+
+Install the generated VSIX:
+
+```text
+src\Lizerium.Localization.EditorHints\bin\Release\net472\Lizerium.Localization.EditorHints.1.0.4.vsix
+```
+
+The VSIX writes diagnostics to `%TEMP%/Lizerium.Localization.EditorHints.log`.
 
 ## GUI Editor
 

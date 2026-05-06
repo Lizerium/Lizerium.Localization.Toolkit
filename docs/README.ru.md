@@ -12,6 +12,7 @@
 - [AI Core](ai-core.ru.md)
 - [GUI](gui.ru.md)
 - [XAML VSIX](xaml-vsix.ru.md)
+- [C# inline-подсказки](editor-hints.ru.md)
 - [Публикация релиза](PUSH_RELEASE.ru.md)
 
 ## GitHub Pages

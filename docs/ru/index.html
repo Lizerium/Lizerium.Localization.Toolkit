@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lizerium Localization Toolkit - AI локализация RESX для .NET и WPF</title>
-  <meta name="description" content="Автоматическая генерация RESX ключей, переводов, C# API и WPF XAML локализации через локальный AI, Ollama и LibreTranslate.">
+  <meta name="description" content="Автоматическая генерация RESX ключей, переводов, C# API, C# inline-подсказок и WPF XAML локализации через локальный AI, Ollama и LibreTranslate.">
   <link rel="canonical" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/">
   <link rel="alternate" hreflang="en" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/">
   <link rel="alternate" hreflang="ru" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/ru/">
@@ -46,11 +46,12 @@
     <section class="hero">
       <div class="shell">
         <div class="eyebrow">RESX локализация .NET с локальным AI</div>
-        <h1>Автогенерация переводов, RESX ключей, C# API и WPF XAML локализации.</h1>
-        <p class="lead">Lizerium.Localization.Toolkit объединяет runtime, source generator, Roslyn analyzers, Visual Studio CodeFix, XAML VSIX и локальные AI переводы через Ollama и LibreTranslate.</p>
+        <h1>Автогенерация переводов, RESX ключей, C# API, подсказок редактора и WPF XAML локализации.</h1>
+        <p class="lead">Lizerium.Localization.Toolkit объединяет runtime, source generator, Roslyn analyzers, Visual Studio CodeFix, C# inline-подсказки, XAML VSIX и локальные AI переводы через Ollama и LibreTranslate.</p>
         <div class="actions">
           <a class="button primary" href="#start">Начать с NuGet</a>
           <a class="button" href="landing/lokalizaciya-wpf-xaml.html">XAML лампочка</a>
+          <a class="button" href="../editor-hints.ru.html">C# подсказки</a>
           <a class="button" href="landing/nastroika-ai-lokalizacii.html">Настроить AI</a>
         </div>
       </div>
@@ -59,7 +60,7 @@
     <section class="section" id="start">
       <div class="shell">
         <h2>Быстрый старт</h2>
-        <div class="grid two">
+        <div class="grid">
           <div class="card">
             <h3>NuGet пакет</h3>
             <pre><code>&lt;PackageReference Include="Lizerium.Localization.Toolkit" Version="1.0.0" /&gt;</code></pre>
@@ -70,6 +71,43 @@
             <pre><code>src\Lizerium.Localization.Xaml.Vsix\bin\Release\net472\Lizerium.Localization.Xaml.Vsix.vsix</code></pre>
             <p>Лампочка Visual Studio заменяет XAML текст на `{loc:Loc Key}` и создает записи в ресурсах.</p>
           </div>
+          <div class="card">
+            <h3>VSIX для C# подсказок</h3>
+            <pre><code>src\Lizerium.Localization.EditorHints\bin\Release\net472\Lizerium.Localization.EditorHints.1.0.4.vsix</code></pre>
+            <p>Inline-подсказки показывают значения `.resx` рядом с вызовами вроде `L.MainWindow.Title()`.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section media-section">
+      <div class="shell">
+        <h2>Как это выглядит в Visual Studio</h2>
+        <div class="media-grid">
+          <figure class="media-card wide">
+            <div class="media-frame">
+              <img src="https://raw.githubusercontent.com/Lizerium/Lizerium.Localization.Toolkit/main/media/docs/devenv_2Vq5OSsGQR.gif" alt="Visual Studio показывает подсказки значений ключей локализации">
+            </div>
+            <figcaption>Inline-подсказки значений при работе с вызовами сгенерированной локализации.</figcaption>
+          </figure>
+          <figure class="media-card wide">
+            <div class="media-frame">
+              <img src="https://raw.githubusercontent.com/Lizerium/Lizerium.Localization.Toolkit/main/media/docs/devenv_T79vIiMzp6.gif" alt="Лампочка Visual Studio преобразует XAML текст в ключ локализации">
+            </div>
+            <figcaption>XAML лампочка преобразует UI текст в `{loc:Loc Key}`.</figcaption>
+          </figure>
+          <figure class="media-card">
+            <div class="media-frame">
+              <img src="https://raw.githubusercontent.com/Lizerium/Lizerium.Localization.Toolkit/main/media/docs/1.png" alt="Сгенерированные файлы ресурсов и ключи локализации">
+            </div>
+            <figcaption>Ключи ресурсов и сгенерированный API остаются синхронизированными.</figcaption>
+          </figure>
+          <figure class="media-card">
+            <div class="media-frame">
+              <img src="https://raw.githubusercontent.com/Lizerium/Lizerium.Localization.Toolkit/main/media/docs/3.png" alt="Сценарий локализации в Visual Studio">
+            </div>
+            <figcaption>Рабочий сценарий локализации WPF прямо в Visual Studio.</figcaption>
+          </figure>
         </div>
       </div>
     </section>
@@ -115,6 +153,7 @@
               <li><a href="../analyzer.ai.ru.html">AI Analyzer RU</a></li>
               <li><a href="../ai-core.ru.html">AI Core RU</a></li>
               <li><a href="../xaml-vsix.ru.html">XAML VSIX RU</a></li>
+              <li><a href="../editor-hints.ru.html">C# inline-подсказки RU</a></li>
               <li><a href="../gui.ru.html">GUI RU</a></li>
             </ul>
           </div>
@@ -128,6 +167,7 @@
               <li><a href="../analyzer.ai.html">AI analyzer</a></li>
               <li><a href="../ai-core.html">AI Core</a></li>
               <li><a href="../xaml-vsix.html">XAML VSIX</a></li>
+              <li><a href="../editor-hints.html">C# editor hints</a></li>
               <li><a href="../gui.html">GUI editor</a></li>
             </ul>
           </div>

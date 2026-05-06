@@ -9,7 +9,8 @@ It includes:
 - analyzer diagnostics for missing localization keys;
 - a Visual Studio CodeFix that creates missing `.resx` entries from code;
 - AI CodeFix support for normal and interpolated C# strings;
-- WPF XAML runtime localization through `{loc:Loc Key}`.
+- WPF XAML runtime localization through `{loc:Loc Key}`;
+- optional Visual Studio inline hints for generated C# localization calls.
 
 ## Install
 
@@ -111,5 +112,15 @@ xaml.LocalizeText(
 It replaces XAML literals like `Content="English"` with `Content="{loc:Loc MainWindow_Button_English}"`, adds `xmlns:loc` when missing, and writes keys to `Strings.en.resx` and `Strings.ru.resx`.
 
 For an editor light bulb in Visual Studio 2022, build and install `Lizerium.Localization.Xaml.Vsix`. It offers `Создать ключ локализации для XAML` for selected XAML text or literal attribute values.
+
+## C# Editor Hints
+
+For inline hints in C# files, build and install `Lizerium.Localization.EditorHints`.
+
+```text
+src\Lizerium.Localization.EditorHints\bin\Release\net472\Lizerium.Localization.EditorHints.1.0.4.vsix
+```
+
+It shows `.resx` values next to generated calls such as `L.MainWindow.Title()` and writes diagnostics to `%TEMP%/Lizerium.Localization.EditorHints.log`.
 
 Project repository: https://github.com/Lizerium/Lizerium.Localization.Toolkit

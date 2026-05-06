@@ -12,6 +12,7 @@ This folder contains repository markdown docs and a static GitHub Pages site.
 - [AI Core](ai-core.md)
 - [GUI](gui.md)
 - [XAML VSIX](xaml-vsix.md)
+- [C# Editor Hints](editor-hints.md)
 - [Release push](PUSH_RELEASE.md)
 
 Russian versions use the `.ru.md` suffix.
