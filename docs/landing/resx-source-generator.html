@@ -1,26 +1,82 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Strongly typed RESX source generator for .NET localization</title>
-  <meta name="description" content="Generate strongly typed C# localization APIs from RESX keys with Lizerium.Localization.Generator.">
-  <link rel="icon" href="../favicon.ico" type="image/x-icon">
-  <link rel="canonical" href="https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/resx-source-generator.html">
-  <link rel="stylesheet" href="../assets/site.css">
-  <script defer src="../assets/language.js"></script>
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"TechArticle","headline":"Strongly typed RESX source generator for .NET localization","about":["C# source generator","RESX","localization"]}
-  </script>
-</head>
-<body>
-  <header class="topbar"><div class="shell nav"><a class="brand" href="../"><img src="https://raw.githubusercontent.com/Lizerium/Lizerium.Localization.Toolkit/main/media/LOGO_400x400.png" alt="">Lizerium</a><nav class="links"><a href="../">Home</a><a href="../generator.md">Generator docs</a></nav></div></header>
-  <main class="section"><div class="shell article">
-    <h1>Strongly typed RESX source generator for .NET</h1>
-    <p class="lead">Turn keys such as `MainWindow_Title` and `Settings_Log_FileCreated_Format` into discoverable C# methods.</p>
-    <pre><code>var title = L.MainWindow.Title();
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Strongly typed RESX source generator for .NET localization</title>
+		<meta
+			name="description"
+			content="Generate strongly typed C# localization APIs from RESX keys with Lizerium.Localization.Generator."
+		/>
+		<link rel="icon" href="../favicon.ico" type="image/x-icon" />
+		<link
+			rel="canonical"
+			href="https://lizerium.github.io/Lizerium.Localization.Toolkit/landing/resx-source-generator.html"
+		/>
+		<link rel="stylesheet" href="../assets/site.css" />
+		<script defer src="../assets/language.js"></script>
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "TechArticle",
+				"headline": "Strongly typed RESX source generator for .NET localization",
+				"about": ["C# source generator", "RESX", "localization"]
+			}
+		</script>
+	</head>
+	<body>
+		<header class="topbar">
+			<div class="shell nav">
+				<a class="brand" href="../"
+					><img
+						src="https://raw.githubusercontent.com/Lizerium/Lizerium.Localization.Toolkit/main/media/LOGO_400x400.png"
+						alt=""
+					/>Lizerium</a
+				>
+				<nav class="links">
+					<a href="../">Home</a><a href="../generator.md">Generator docs</a>
+				</nav>
+			</div>
+		</header>
+		<main class="section">
+			<div class="shell article">
+				<h1>Strongly typed RESX source generator for .NET</h1>
+				<p class="lead">
+					Turn keys such as `MainWindow_Title` and
+					`Settings_Log_FileCreated_Format` into discoverable C# methods.
+				</p>
+				<pre><code>var title = L.MainWindow.Title();
 var message = L.Settings.Log.FileCreated(path);</code></pre>
-    <p>The generator validates missing language keys and placeholder mismatches through diagnostics such as `LOC001` and `LOC002`.</p>
-  </div></main>
-</body>
+				<p>
+					The generator validates missing language keys and placeholder
+					mismatches through diagnostics such as `LOC001` and `LOC002`.
+				</p>
+			</div>
+		</main>
+		<script>
+			;(function () {
+				fetch('https://license.dvurechensky.pro/api/v1/log', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						site: location.hostname,
+						path: location.pathname,
+						event_type: 'pageview',
+						referrer: document.referrer || '',
+						utm_source:
+							new URLSearchParams(location.search).get('utm_source') || '',
+						utm_medium:
+							new URLSearchParams(location.search).get('utm_medium') || '',
+						utm_campaign:
+							new URLSearchParams(location.search).get('utm_campaign') || '',
+						title: document.title || '',
+						language: navigator.language || '',
+						viewport: window.innerWidth + 'x' + window.innerHeight,
+					}),
+				}).catch(function () {})
+			})()
+		</script>
+	</body>
 </html>
