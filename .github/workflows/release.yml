@@ -99,12 +99,15 @@ jobs:
           New-Item -ItemType Directory -Force artifacts/nuget | Out-Null
 
           function Get-ProjectPropertyFromText([string]$text, [string]$propertyName) {
-            $xml = [xml]$text
-            foreach ($group in $xml.Project.PropertyGroup) {
-              $value = $group.$propertyName
-              if (-not [string]::IsNullOrWhiteSpace($value)) {
-                return $value.Trim()
-              }
+            $text = $text.TrimStart([char]0xFEFF)
+            $escapedName = [System.Text.RegularExpressions.Regex]::Escape($propertyName)
+            $match = [System.Text.RegularExpressions.Regex]::Match(
+              $text,
+              "<\s*$escapedName(?:\s+[^>]*)?\s*>(?<Value>.*?)</\s*$escapedName\s*>",
+              [System.Text.RegularExpressions.RegexOptions]::Singleline)
+
+            if ($match.Success) {
+              return $match.Groups["Value"].Value.Trim()
             }
 
             return $null
