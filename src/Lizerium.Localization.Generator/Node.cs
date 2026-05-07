@@ -64,12 +64,26 @@ public sealed partial class LocalizationGenerator
             foreach (var child in _children.Values)
                 child.Write(builder, indent + 1);
 
+            var usedMemberNames = new HashSet<string>(_children.Keys, StringComparer.Ordinal);
+
             foreach (var group in _entries.GroupBy(item => item.MethodName))
             {
                 var index = 0;
+                var baseMethodName = group.Key;
+
+                if (usedMemberNames.Contains(baseMethodName))
+                    baseMethodName += "Value";
+
                 // If sanitized keys collide, keep the first method name and suffix following overload names.
                 foreach (var entry in group)
-                    WriteMethod(builder, indent + 1, entry, index++ == 0 ? entry.MethodName : entry.MethodName + index);
+                {
+                    var methodName = index++ == 0 ? baseMethodName : baseMethodName + index;
+                    while (usedMemberNames.Contains(methodName))
+                        methodName += "Value";
+
+                    usedMemberNames.Add(methodName);
+                    WriteMethod(builder, indent + 1, entry, methodName);
+                }
             }
 
             AppendIndent(builder, indent);

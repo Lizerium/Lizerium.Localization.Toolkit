@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
   <Metadata>
-    <Identity Id="Lizerium.Localization.Xaml.Vsix" Version="1.0.4" Language="en-US" Publisher="Dvurechensky" />
+    <Identity Id="Lizerium.Localization.Xaml.Vsix" Version="1.0.5" Language="en-US" Publisher="Dvurechensky" />
     <DisplayName>Lizerium Localization XAML Tools</DisplayName>
     <Description xml:space="preserve">Adds Visual Studio XAML light bulb actions for WPF localization. Select XAML text or place the caret inside a literal, run "Create XAML localization key", and the extension will add/update RESX keys, generate AI translations through the configured Ollama/LibreTranslate servers, and insert {loc:Loc Key}. Existing project LocExtension is reused; otherwise a small source-only runtime LocExtension is added to the project. Server URLs and model are configurable in Tools - Options - Lizerium Localization - AI Servers.</Description>
     <MoreInfo>https://github.com/Lizerium/Lizerium.Localization.Toolkit</MoreInfo>

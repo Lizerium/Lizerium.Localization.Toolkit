@@ -35,17 +35,46 @@ jobs:
       - name: Resolve release version
         shell: pwsh
         run: |
-          $version = "${{ github.ref_name }}"
           $releaseTag = "${{ github.ref_name }}"
-          if ($version -eq "main" -or $version -eq "master") {
-            $version = "1.0.4"
-            $releaseTag = "v$version"
-          }
-          if ($version.StartsWith("v")) {
-            $version = $version.Substring(1)
+
+          function Get-ProjectProperty([string]$project, [string]$propertyName) {
+            $xml = [xml](Get-Content $project)
+            foreach ($group in $xml.Project.PropertyGroup) {
+              $value = $group.$propertyName
+              if (-not [string]::IsNullOrWhiteSpace($value)) {
+                return $value.Trim()
+              }
+            }
+
+            return $null
           }
 
-          "PACKAGE_VERSION=$version" >> $env:GITHUB_ENV
+          function Resolve-ProjectVersion([string]$project) {
+            $version = Get-ProjectProperty $project "PackageVersion"
+            if ([string]::IsNullOrWhiteSpace($version)) {
+              $version = Get-ProjectProperty $project "Version"
+            }
+
+            if ($version -match '^\$\((?<PropertyName>[^)]+)\)$') {
+              $version = Get-ProjectProperty $project $Matches.PropertyName
+            }
+
+            if ([string]::IsNullOrWhiteSpace($version)) {
+              $version = Get-ProjectProperty $project "VsixPackageVersion"
+            }
+
+            if ([string]::IsNullOrWhiteSpace($version)) {
+              throw "Cannot resolve version from $project"
+            }
+
+            return $version
+          }
+
+          if ("${{ github.ref_type }}" -ne "tag") {
+            $releaseVersion = Resolve-ProjectVersion "src/Lizerium.Localization.Toolkit/Lizerium.Localization.Toolkit.csproj"
+            $releaseTag = "v$releaseVersion"
+          }
+
           "RELEASE_TAG=$releaseTag" >> $env:GITHUB_ENV
 
       - name: Restore solution
@@ -67,6 +96,35 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force artifacts/nuget | Out-Null
 
+          function Get-ProjectProperty([string]$project, [string]$propertyName) {
+            $xml = [xml](Get-Content $project)
+            foreach ($group in $xml.Project.PropertyGroup) {
+              $value = $group.$propertyName
+              if (-not [string]::IsNullOrWhiteSpace($value)) {
+                return $value.Trim()
+              }
+            }
+
+            return $null
+          }
+
+          function Resolve-ProjectVersion([string]$project) {
+            $version = Get-ProjectProperty $project "PackageVersion"
+            if ([string]::IsNullOrWhiteSpace($version)) {
+              $version = Get-ProjectProperty $project "Version"
+            }
+
+            if ($version -match '^\$\((?<PropertyName>[^)]+)\)$') {
+              $version = Get-ProjectProperty $project $Matches.PropertyName
+            }
+
+            if ([string]::IsNullOrWhiteSpace($version)) {
+              throw "Cannot resolve version from $project"
+            }
+
+            return $version
+          }
+
           $projects = @(
             "src/Lizerium.Localization.Core/Lizerium.Localization.Core.csproj",
             "src/Lizerium.AI.LocalizationAssistant.Core/Lizerium.AI.LocalizationAssistant.Core.csproj",
@@ -78,10 +136,13 @@ jobs:
           )
 
           foreach ($project in $projects) {
+            $version = Resolve-ProjectVersion $project
+            Write-Host "Packing $project version $version"
+
             dotnet pack $project `
               -c $env:CONFIGURATION `
-              -p:Version=$env:PACKAGE_VERSION `
-              -p:PackageVersion=$env:PACKAGE_VERSION `
+              -p:Version=$version `
+              -p:PackageVersion=$version `
               -o artifacts/nuget `
               --no-restore `
               --no-build
@@ -92,29 +153,61 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force artifacts/vsix | Out-Null
 
+          function Get-ProjectProperty([string]$project, [string]$propertyName) {
+            $xml = [xml](Get-Content $project)
+            foreach ($group in $xml.Project.PropertyGroup) {
+              $value = $group.$propertyName
+              if (-not [string]::IsNullOrWhiteSpace($value)) {
+                return $value.Trim()
+              }
+            }
+
+            return $null
+          }
+
+          function Resolve-VsixVersion([string]$project) {
+            $version = Get-ProjectProperty $project "VsixPackageVersion"
+            if ([string]::IsNullOrWhiteSpace($version)) {
+              $version = Get-ProjectProperty $project "Version"
+            }
+
+            if ($version -match '^\$\((?<PropertyName>[^)]+)\)$') {
+              $version = Get-ProjectProperty $project $Matches.PropertyName
+            }
+
+            if ([string]::IsNullOrWhiteSpace($version)) {
+              throw "Cannot resolve VSIX version from $project"
+            }
+
+            return $version
+          }
+
           $vsixProjects = @(
             @{
               Project = "src/Lizerium.Localization.Xaml.Vsix/Lizerium.Localization.Xaml.Vsix.csproj"
-              Output = "src/Lizerium.Localization.Xaml.Vsix/bin/$env:CONFIGURATION/net472/Lizerium.Localization.Xaml.Vsix.$env:PACKAGE_VERSION.vsix"
-              ReleaseName = "Lizerium.Localization.Xaml.Vsix-$env:RELEASE_TAG.vsix"
+              PackageId = "Lizerium.Localization.Xaml.Vsix"
             },
             @{
               Project = "src/Lizerium.Localization.EditorHints/Lizerium.Localization.EditorHints.csproj"
-              Output = "src/Lizerium.Localization.EditorHints/bin/$env:CONFIGURATION/net472/Lizerium.Localization.EditorHints.$env:PACKAGE_VERSION.vsix"
-              ReleaseName = "Lizerium.Localization.EditorHints-$env:RELEASE_TAG.vsix"
+              PackageId = "Lizerium.Localization.EditorHints"
             }
           )
 
           foreach ($item in $vsixProjects) {
+            $version = Resolve-VsixVersion $item.Project
+            $output = "src/$($item.PackageId)/bin/$env:CONFIGURATION/net472/$($item.PackageId).$version.vsix"
+            $releaseName = "$($item.PackageId)-v$version.vsix"
+            Write-Host "Building $($item.Project) version $version"
+
             msbuild $item.Project `
               /t:Build `
               /p:Configuration=$env:CONFIGURATION `
               /p:RestorePackages=false `
-              /p:VsixPackageVersion=$env:PACKAGE_VERSION `
-              /p:Version=$env:PACKAGE_VERSION `
+              /p:VsixPackageVersion=$version `
+              /p:Version=$version `
               /v:minimal
 
-            Copy-Item $item.Output "artifacts/vsix/$($item.ReleaseName)" -Force
+            Copy-Item $output "artifacts/vsix/$releaseName" -Force
           }
 
       - name: Restore publish projects
@@ -177,32 +270,30 @@ jobs:
 
           Copy-Item artifacts/vsix/*.vsix artifacts/release/ -Force
           Copy-Item CHANGELOG.md artifacts/release/CHANGELOG.md -Force
+          Copy-Item CHANGELOG.ru.md artifacts/release/CHANGELOG.ru.md -Force
 
           Get-ChildItem artifacts/release -File |
             Get-FileHash -Algorithm SHA256 |
             ForEach-Object { "$($_.Hash)  $(Split-Path $_.Path -Leaf)" } |
             Set-Content "artifacts/release/SHA256SUMS.txt" -Encoding UTF8
 
+          $vsixList = Get-ChildItem artifacts/vsix/*.vsix |
+            Sort-Object Name |
+            ForEach-Object { "- VSIX для Visual Studio 2022: ``$($_.Name)``" }
+          $vsixNotes = $vsixList -join "`n"
+
           $releaseNotes = @"
           ## Lizerium.Localization.Toolkit $tag
 
-          See the full bilingual changelog in `CHANGELOG.md`.
+          Полное описание изменений:
 
-          ### Included
-
-          - NuGet packages: Toolkit, Core, AI Core, Generator, Analyzer, AI Analyzer, GUI
-          - Visual Studio 2022 VSIX: `Lizerium.Localization.Xaml.Vsix-$tag.vsix`
-          - Visual Studio 2022 VSIX: `Lizerium.Localization.EditorHints-$tag.vsix`
-          - Windows x64 standalone GUI editor
-          - Windows x64 published WPF sample application
-          - Sample project source archive
-          - SHA-256 checksums
+          - [Русский CHANGELOG](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/CHANGELOG.ru.md)
+          - [English CHANGELOG](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/CHANGELOG.md)
 
           ### Что входит
 
-          - NuGet-пакеты: Toolkit, Core, AI Core, Generator, Analyzer, AI Analyzer, GUI
-          - VSIX для Visual Studio 2022: `Lizerium.Localization.Xaml.Vsix-$tag.vsix`
-          - VSIX для Visual Studio 2022: `Lizerium.Localization.EditorHints-$tag.vsix`
+          - NuGet-пакеты: Toolkit, Core, AI Core, Generator, Analyzer, AI Analyzer, GUI. Версия каждого пакета берется из его `.csproj`.
+          $vsixNotes
           - Самостоятельная Windows x64 сборка GUI-редактора
           - Опубликованная Windows x64 сборка WPF sample-приложения
           - Архив исходников sample-проекта
@@ -227,4 +318,5 @@ jobs:
             artifacts/release/*.zip
             artifacts/release/*.vsix
             artifacts/release/CHANGELOG.md
+            artifacts/release/CHANGELOG.ru.md
             artifacts/release/SHA256SUMS.txt

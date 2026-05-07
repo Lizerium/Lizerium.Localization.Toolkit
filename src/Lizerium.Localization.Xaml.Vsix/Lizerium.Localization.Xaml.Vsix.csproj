@@ -9,7 +9,7 @@
     <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <TemplateOutputDirectory>$(IntermediateOutputPath)Templates</TemplateOutputDirectory>
-    <VsixPackageVersion>1.0.4</VsixPackageVersion>
+    <VsixPackageVersion>1.0.5</VsixPackageVersion>
     <TargetVsixContainerName>Lizerium.Localization.Xaml.Vsix.$(VsixPackageVersion).vsix</TargetVsixContainerName>
     <TargetVsixContainer>$(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\$(TargetVsixContainerName)</TargetVsixContainer>
     <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>

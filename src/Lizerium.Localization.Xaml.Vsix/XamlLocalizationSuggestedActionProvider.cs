@@ -15,6 +15,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 using Lizerium.AI.LocalizationAssistant.Core.Clients.Ollama;
 using Lizerium.AI.LocalizationAssistant.Core.Components.Ollama;
@@ -420,11 +421,12 @@ internal sealed class XamlLocalizationSuggestedAction : ISuggestedAction
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
-            WriteResources(_candidate, cancellationToken);
+            var key = ResolveGeneratorSafeKey(_candidate);
+            WriteResources(_candidate, key, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
             var snapshot = _textBuffer.CurrentSnapshot;
-            var replacement = "{" + XamlLocalizationMarkupPrefix + " " + _candidate.Key + "}";
+            var replacement = "{" + XamlLocalizationMarkupPrefix + " " + key + "}";
             using var edit = _textBuffer.CreateEdit();
 
             EnsureLocNamespace(snapshot, edit, _candidate.XamlPath);
@@ -441,7 +443,7 @@ internal sealed class XamlLocalizationSuggestedAction : ISuggestedAction
             }
 
             edit.Apply();
-            Log("Localized XAML value. File=" + _candidate.XamlPath + "; Key=" + _candidate.Key);
+            Log("Localized XAML value. File=" + _candidate.XamlPath + "; Key=" + key);
         }
         catch (Exception ex)
         {
@@ -706,7 +708,7 @@ namespace Lizerium.Generated.Localization
             edit.Delete(new Span(locNamespaceMatch.Index, locNamespaceMatch.Length));
     }
 
-    private static void WriteResources(XamlLocalizationCandidate candidate, CancellationToken cancellationToken)
+    private static void WriteResources(XamlLocalizationCandidate candidate, string key, CancellationToken cancellationToken)
     {
         ThreadHelper.ThrowIfNotOnUIThread();
         var resourcesDirectory = FindResourcesDirectory(candidate.XamlPath);
@@ -714,9 +716,89 @@ namespace Lizerium.Generated.Localization
         var localization = GetLocalization(candidate.Value, cancellationToken);
 
         var writer = new ResxWriter();
-        writer.AddOrUpdate(Path.Combine(resourcesDirectory, "Strings.en.resx"), candidate.Key, localization.En);
-        writer.AddOrUpdate(Path.Combine(resourcesDirectory, "Strings.ru.resx"), candidate.Key, localization.Ru);
-        Log("Updated resources. Directory=" + resourcesDirectory + "; Key=" + candidate.Key);
+        writer.AddOrUpdate(Path.Combine(resourcesDirectory, "Strings.en.resx"), key, localization.En);
+        writer.AddOrUpdate(Path.Combine(resourcesDirectory, "Strings.ru.resx"), key, localization.Ru);
+        Log("Updated resources. Directory=" + resourcesDirectory + "; Key=" + key);
+    }
+
+    private static string ResolveGeneratorSafeKey(XamlLocalizationCandidate candidate)
+    {
+        var resourcesDirectory = FindResourcesDirectory(candidate.XamlPath);
+        var existingKeys = LoadExistingResourceKeys(resourcesDirectory);
+        var key = MakeKeyGeneratorSafe(candidate.Key, existingKeys);
+        var suffix = 2;
+
+        while (existingKeys.Contains(key) || HasPrefixCollision(key, existingKeys))
+            key = MakeKeyGeneratorSafe(candidate.Key + "_" + suffix++.ToString(CultureInfo.InvariantCulture), existingKeys);
+
+        return key;
+    }
+
+    private static string MakeKeyGeneratorSafe(string key, HashSet<string> existingKeys)
+    {
+        if (!HasPrefixCollision(key, existingKeys))
+            return key;
+
+        var parts = key.Split(new[] { '_' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+        if (parts.Count == 0)
+            return key;
+
+        for (var prefixLength = parts.Count - 1; prefixLength >= 1; prefixLength--)
+        {
+            var prefix = string.Join("_", parts.Take(prefixLength));
+            if (!existingKeys.Contains(prefix))
+                continue;
+
+            parts[prefixLength - 1] += "Value";
+            return string.Join("_", parts);
+        }
+
+        parts[parts.Count - 1] += "Value";
+        return string.Join("_", parts);
+    }
+
+    private static bool HasPrefixCollision(string key, HashSet<string> existingKeys)
+    {
+        foreach (var existing in existingKeys)
+        {
+            if (string.Equals(existing, key, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (key.StartsWith(existing + "_", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (existing.StartsWith(key + "_", StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static HashSet<string> LoadExistingResourceKeys(string resourcesDirectory)
+    {
+        var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (!Directory.Exists(resourcesDirectory))
+            return keys;
+
+        foreach (var file in Directory.EnumerateFiles(resourcesDirectory, "Strings*.resx", SearchOption.TopDirectoryOnly))
+        {
+            try
+            {
+                var document = XDocument.Load(file);
+                foreach (var item in document.Root?.Elements("data") ?? Enumerable.Empty<XElement>())
+                {
+                    var key = item.Attribute("name")?.Value;
+                    if (!string.IsNullOrWhiteSpace(key))
+                        keys.Add(key!);
+                }
+            }
+            catch
+            {
+                Log("Could not read RESX keys. File=" + file);
+            }
+        }
+
+        return keys;
     }
 
     private static LocalizationResult GetLocalization(string sourceText, CancellationToken cancellationToken)
