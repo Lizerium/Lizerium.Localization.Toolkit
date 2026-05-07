@@ -1,5 +1,15 @@
 # Changelog / Журнал изменений
 
+## 1.0.5 - 2026-05-07
+
+### English | [Russian](CHANGELOG.ru.md)
+
+#### Fixed
+
+- Fixed a critical `Lizerium.Localization.Xaml.Vsix` bug introduced after the previous release.
+- Bumped `Lizerium.Localization.Xaml.Vsix` to `1.0.5` while keeping other library and extension versions independent.
+- Bumped NuGet packages to `1.0.5` for the analyzer packaging fix.
+
 ## 1.0.4 - 2026-05-07
 
 ### English | [Russian](CHANGELOG.ru.md)

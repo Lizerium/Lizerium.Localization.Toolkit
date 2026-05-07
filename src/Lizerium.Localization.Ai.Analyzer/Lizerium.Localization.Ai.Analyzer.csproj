@@ -9,7 +9,7 @@
     <NoWarn>$(NoWarn);RS2008</NoWarn>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>Lizerium.Localization.Ai.Analyzer</PackageId>
-	<Version>1.0.4</Version>
+	<Version>1.0.5</Version>
     <Title>Lizerium Localization Ai Analyzer</Title>
     <Authors>Dvurechensky</Authors>
     <Copyright>Copyright (c) Nikolay Dvurechensky</Copyright>

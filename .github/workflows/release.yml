@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -91,13 +93,13 @@ jobs:
           --no-build
           --filter "Category!=LiveOllama"
 
-      - name: Pack NuGet packages
+      - name: Pack changed NuGet packages
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force artifacts/nuget | Out-Null
 
-          function Get-ProjectProperty([string]$project, [string]$propertyName) {
-            $xml = [xml](Get-Content $project)
+          function Get-ProjectPropertyFromText([string]$text, [string]$propertyName) {
+            $xml = [xml]$text
             foreach ($group in $xml.Project.PropertyGroup) {
               $value = $group.$propertyName
               if (-not [string]::IsNullOrWhiteSpace($value)) {
@@ -108,22 +110,34 @@ jobs:
             return $null
           }
 
-          function Resolve-ProjectVersion([string]$project) {
-            $version = Get-ProjectProperty $project "PackageVersion"
+          function Resolve-VersionFromText([string]$text) {
+            $version = Get-ProjectPropertyFromText $text "PackageVersion"
             if ([string]::IsNullOrWhiteSpace($version)) {
-              $version = Get-ProjectProperty $project "Version"
+              $version = Get-ProjectPropertyFromText $text "Version"
             }
 
             if ($version -match '^\$\((?<PropertyName>[^)]+)\)$') {
-              $version = Get-ProjectProperty $project $Matches.PropertyName
+              $version = Get-ProjectPropertyFromText $text $Matches.PropertyName
             }
 
             if ([string]::IsNullOrWhiteSpace($version)) {
-              throw "Cannot resolve version from $project"
+              throw "Cannot resolve version"
             }
 
             return $version
           }
+
+          function Resolve-ProjectVersion([string]$project) {
+            return Resolve-VersionFromText (Get-Content $project -Raw)
+          }
+
+          $currentTag = "${{ github.ref_name }}"
+          $previousTag = git tag --sort=-v:refname |
+            Where-Object { $_ -match '^v\d+\.\d+\.\d+$' -and $_ -ne $currentTag } |
+            Select-Object -First 1
+
+          Write-Host "Current tag: $currentTag"
+          Write-Host "Previous tag: $previousTag"
 
           $projects = @(
             "src/Lizerium.Localization.Core/Lizerium.Localization.Core.csproj",
@@ -137,6 +151,20 @@ jobs:
 
           foreach ($project in $projects) {
             $version = Resolve-ProjectVersion $project
+            $previousVersion = $null
+
+            if (-not [string]::IsNullOrWhiteSpace($previousTag)) {
+              $previousText = git show "$previousTag`:$project" 2>$null
+              if ($LASTEXITCODE -eq 0 -and $previousText) {
+                $previousVersion = Resolve-VersionFromText ($previousText -join "`n")
+              }
+            }
+
+            if ($version -eq $previousVersion) {
+              Write-Host "Skipping $project, version unchanged: $version"
+              continue
+            }
+
             Write-Host "Packing $project version $version"
 
             dotnet pack $project `
@@ -146,6 +174,11 @@ jobs:
               -o artifacts/nuget `
               --no-restore `
               --no-build
+          }
+
+          if (-not (Get-ChildItem artifacts/nuget/*.nupkg -ErrorAction SilentlyContinue)) {
+            Write-Host "No NuGet package versions changed; creating marker file."
+            "No NuGet package versions changed." | Set-Content artifacts/nuget/NO_NUGET_PACKAGES_CHANGED.txt -Encoding UTF8
           }
 
       - name: Build VSIX packages
@@ -258,10 +291,12 @@ jobs:
             -DestinationPath "artifacts/release/$prefix-Sample-$tag-${{ env.RID }}.zip" `
             -Force
 
-          Compress-Archive `
-            -Path artifacts/nuget/*.nupkg `
-            -DestinationPath "artifacts/release/$prefix-NuGet-$tag.zip" `
-            -Force
+          if (Get-ChildItem artifacts/nuget/*.nupkg -ErrorAction SilentlyContinue) {
+            Compress-Archive `
+              -Path artifacts/nuget/*.nupkg `
+              -DestinationPath "artifacts/release/$prefix-NuGet-$tag.zip" `
+              -Force
+          }
 
           Compress-Archive `
             -Path samples/WpfSampleApp/* `
@@ -277,13 +312,26 @@ jobs:
             ForEach-Object { "$($_.Hash)  $(Split-Path $_.Path -Leaf)" } |
             Set-Content "artifacts/release/SHA256SUMS.txt" -Encoding UTF8
 
-          $vsixList = Get-ChildItem artifacts/vsix/*.vsix |
+          $vsixListRu = Get-ChildItem artifacts/vsix/*.vsix |
             Sort-Object Name |
             ForEach-Object { "- VSIX для Visual Studio 2022: ``$($_.Name)``" }
-          $vsixNotes = $vsixList -join "`n"
+          $vsixNotesRu = $vsixListRu -join "`n"
+
+          $vsixListEn = Get-ChildItem artifacts/vsix/*.vsix |
+            Sort-Object Name |
+            ForEach-Object { "- Visual Studio 2022 VSIX: ``$($_.Name)``" }
+          $vsixNotesEn = $vsixListEn -join "`n"
+
+          $nugetPackages = Get-ChildItem artifacts/nuget/*.nupkg -ErrorAction SilentlyContinue |
+            Sort-Object Name |
+            ForEach-Object { "- ``$($_.Name)``" }
+          $nugetNotesRu = if ($nugetPackages) { $nugetPackages -join "`n" } else { "- NuGet-пакеты не пересобирались: версии `.csproj` не изменились." }
+          $nugetNotesEn = if ($nugetPackages) { $nugetPackages -join "`n" } else { "- NuGet packages were not rebuilt because `.csproj` versions did not change." }
 
           $releaseNotes = @"
           ## Lizerium.Localization.Toolkit $tag
+
+          ### Русский
 
           Полное описание изменений:
 
@@ -292,11 +340,33 @@ jobs:
 
           ### Что входит
 
-          - NuGet-пакеты: Toolkit, Core, AI Core, Generator, Analyzer, AI Analyzer, GUI. Версия каждого пакета берется из его `.csproj`.
-          $vsixNotes
+          NuGet-пакеты, пересобранные для этого релиза:
+
+          $nugetNotesRu
+
+          $vsixNotesRu
           - Самостоятельная Windows x64 сборка GUI-редактора
           - Опубликованная Windows x64 сборка WPF sample-приложения
           - Архив исходников sample-проекта
+          - SHA-256 checksums
+
+          ### English
+
+          Full changelog:
+
+          - [Russian CHANGELOG](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/CHANGELOG.ru.md)
+          - [English CHANGELOG](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/CHANGELOG.md)
+
+          ### Included
+
+          NuGet packages rebuilt for this release:
+
+          $nugetNotesEn
+
+          $vsixNotesEn
+          - Standalone Windows x64 GUI editor build
+          - Published Windows x64 WPF sample application
+          - Sample project source archive
           - SHA-256 checksums
           "@
 
