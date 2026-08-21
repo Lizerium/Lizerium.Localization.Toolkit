@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 20 августа 2026 09:36:57
- * Version: 1.0.126
+ * Last Updated: 21 августа 2026 06:53:00
+ * Version: 1.0.127
  */
 
 namespace Lizerium.AI.LocalizationAssistant.Core.Services
