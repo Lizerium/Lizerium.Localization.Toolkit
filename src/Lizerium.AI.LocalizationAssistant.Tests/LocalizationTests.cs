@@ -2,8 +2,8 @@
  * Author: Nikolay Dvurechensky
  * Site: https://dvurechensky.pro/
  * Gmail: dvurechenskysoft@gmail.com
- * Last Updated: 03 октября 2026 06:52:44
- * Version: 1.0.170
+ * Last Updated: 04 октября 2026 11:17:30
+ * Version: 1.0.171
  */
 
 using Lizerium.AI.LocalizationAssistant.Core.Clients.Ollama;
